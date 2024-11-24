@@ -21,6 +21,12 @@ public class BusinessRules : IBusinessRules
         _qualityControlService = qualityControlService;
     }
 
+    /// <summary>
+    /// Проверяет, возможно ли перевести плату в следующее состояние безнес-процесса.
+    /// </summary>
+    /// <param name="pcb">Экземпляр платы.</param>
+    /// <returns>Сообщение-статус проверки бизнес-правил.</returns>
+    /// <exception cref="InvalidOperationException">Невозможно осуществить проверку.</exception>
     public string CheckIfContinuationIsPossible(Pcb pcb)
     {
         switch (pcb.GetBusinessState())

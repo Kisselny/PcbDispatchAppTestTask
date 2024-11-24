@@ -3,6 +3,9 @@ using PcbDispatchService.Domain.Logic.States;
 
 namespace PcbDispatchService.Domain.Models;
 
+/// <summary>
+/// Представляет сущность печатной платы.
+/// </summary>
 public class Pcb
 {
     private readonly IStateFactory _stateFactory;
@@ -38,6 +41,11 @@ public class Pcb
 
 
     #region .ctor
+    /// <summary>
+    /// Инициализирует экзампляр класса <see cref="Pcb"/>
+    /// </summary>
+    /// <param name="name">Название печатной платы.</param>
+    /// <param name="stateFactory">Фабрика состояний.</param>
     public Pcb(string name, IStateFactory stateFactory)
     {
         Id = generateId();
@@ -50,16 +58,29 @@ public class Pcb
     #endregion
 
     #region Public API
+    /// <summary>
+    /// Возвращает текущее состояние бизнес-процесса.
+    /// </summary>
+    /// <returns>Объект, описывающий состояние безнес-процесса.</returns>
     public BusinessProcessStatusEnum GetBusinessState()
     {
         return BusinessProcessState.GetCurrentStatus();
     }
 
+    /// <summary>
+    /// Назначает новое состояние безнес-процесса.
+    /// </summary>
+    /// <param name="businessProcessState">Объект, описывающий состояние безнес-процесса.</param>
     public void SetBusinessState(IBusinessProcessState businessProcessState)
     {
         BusinessProcessState = businessProcessState;
     }
     
+    /// <summary>
+    /// Переименовывает печатную плату.
+    /// </summary>
+    /// <param name="newName"></param>
+    /// <exception cref="BusinessException"></exception>
     public void RenamePcb(string newName)
     {
         if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.Registration)
@@ -73,6 +94,11 @@ public class Pcb
         }
     }
     
+    /// <summary>
+    /// Добавляет новый компонент к печатной плате.
+    /// </summary>
+    /// <param name="newComponent">Новый компонент.</param>
+    /// <exception cref="BusinessException">Невозможно добавить компонент.</exception>
     public void AddComponentToPcb(PcbComponent newComponent)
     {
         if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
@@ -86,6 +112,11 @@ public class Pcb
         }
     }
 
+    /// <summary>
+    /// Добавляет новую коллекцию компонентов к печатной плате.
+    /// </summary>
+    /// <param name="newComponents">Новые компоненты</param>
+    /// <exception cref="BusinessException">Невозможно добавить компоненты.</exception>
     public void AddComponentsToPcb(IEnumerable<PcbComponent> newComponents)
     {
         if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
@@ -96,6 +127,23 @@ public class Pcb
         {
             throw new BusinessException(
                 "Невозможно добавить компоненты: плата не находится на этапе добавления компонентов.");
+        }
+    }
+
+    /// <summary>
+    /// Удаляет все добавленные компоненты с текущей платы.
+    /// </summary>
+    /// <exception cref="BusinessException">Невозможно удалить компоненты.</exception>
+    public void RemoveAllComponentsFromBoard()
+    {
+        if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        {
+            Components.Clear();
+        }
+        else
+        {
+            throw new BusinessException(
+                "Невозможно удалить компоненты: плата не находится на этапе добавления компонентов.");
         }
     }
     #endregion
