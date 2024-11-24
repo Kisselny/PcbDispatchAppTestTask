@@ -1,4 +1,6 @@
 using System.Runtime.CompilerServices;
+using PcbDispatchService.Domain.Logic;
+using PcbDispatchService.Domain.Logic.States;
 using PcbDispatchService.Services;
 
 namespace PcbDispatchService;
@@ -19,6 +21,8 @@ public class Program
         builder.Services.AddSingleton<LoggerService>();
         builder.Services.AddScoped<QualityControlService>();
         builder.Services.AddScoped<PcbFactory>();
+        builder.Services.AddScoped<BusinessRules>();
+        builder.Services.AddSingleton<IStateFactory, StateFactory>();
 
         var app = builder.Build();
 
