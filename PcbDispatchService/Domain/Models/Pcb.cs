@@ -5,6 +5,8 @@ namespace PcbDispatchService.Domain.Models;
 
 public class Pcb
 {
+    private readonly IStateFactory _stateFactory;
+
     #region Properties
     /// <summary>
     /// Уникальный идентификатор платы.
@@ -36,12 +38,13 @@ public class Pcb
 
 
     #region .ctor
-    public Pcb(string name)
+    public Pcb(string name, IStateFactory stateFactory)
     {
         Id = generateId();
         Name = validateNameNotEmpty(name);
         Components = new List<PcbComponent>();
-        BusinessProcessState = new RegistrationState();
+        _stateFactory = stateFactory;
+        BusinessProcessState = _stateFactory.CreateRegistrationState();
         QualityControlStatus = QualityControlStatus.NotSureYet;
     }
     #endregion

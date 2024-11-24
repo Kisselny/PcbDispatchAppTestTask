@@ -5,7 +5,7 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic;
 
-public class BusinessRules
+public class BusinessRules : IBusinessRules
 {
     private readonly QualityControlService _qualityControlService;
     public readonly string okMessage = "Ok";
@@ -14,13 +14,14 @@ public class BusinessRules
     private readonly string notOkMessageComponents = "К плате необходимо добавить компоненты";
     private readonly string notOkMessageQuality = "Плата не прошла контроль качества. Необходимо отправить на ремонт.";
     private readonly string notOkMessageDefective = "Плата не прошла контроль качества, т.к. признана бракованной.";
+
     
     public BusinessRules(QualityControlService qualityControlService)
     {
         _qualityControlService = qualityControlService;
     }
 
-    public string ContinuationIsPossible(Pcb pcb)
+    public string CheckIfContinuationIsPossible(Pcb pcb)
     {
         switch (pcb.GetBusinessState())
         {
@@ -41,18 +42,30 @@ public class BusinessRules
             }
             case BusinessProcessStatusEnum.QualityControl:
             {
-                break;
+                var result = _qualityControlService.QualityCheck(pcb);
+
+                if (result == QualityControlStatus.QualityIsOk)
+                {
+                    return okMessage;
+                }
+                else
+                {
+                    return notOkMessageStart + notOkMessageQuality;
+                }
             }
             case BusinessProcessStatusEnum.Repair:
             {
+                pcb.QualityControlStatus = _qualityControlService.TryRepair(pcb);
+                
                 if (pcb.QualityControlStatus == QualityControlStatus.QualityIsOk)
-                    return okMessage;
-                else if(pcb.QualityControlStatus == QualityControlStatus.Defective)
                 {
+                    return okMessage;
+                }
+                else
+                {
+                    pcb.QualityControlStatus = QualityControlStatus.Defective;
                     return notOkMessageStart + notOkMessageDefective;
                 }
-
-                break;
             }
             case BusinessProcessStatusEnum.Packaging:
             {

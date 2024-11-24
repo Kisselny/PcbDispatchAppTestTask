@@ -6,14 +6,10 @@ namespace PcbDispatchService.Domain.Logic.States;
 public class PackagingState : IBusinessProcessState
 {
     private readonly LoggerService _loggerService;
-    private readonly BusinessRules _businessRules;
-    private readonly QualityControlService _qualityControlService;
 
-    public PackagingState(LoggerService loggerService, BusinessRules businessRules, QualityControlService qualityControlService)
+    public PackagingState(LoggerService loggerService)
     {
         _loggerService = loggerService;
-        _businessRules = businessRules;
-        _qualityControlService = qualityControlService;
     }
 
     private bool PackagedAndReleased = false;

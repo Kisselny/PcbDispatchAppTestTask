@@ -22,21 +22,21 @@ public class StateFactory : IStateFactory
 
     public IBusinessProcessState CreateComponentInstallationState()
     {
-        return new ComponentInstallationState(this, _loggerService, _businessRules, _qualityControlService);
+        return new ComponentInstallationState(this, _loggerService, _businessRules);
     }
 
     public IBusinessProcessState CreateQualityControlState()
     {
-        return new QualityControlState(this, _loggerService, _businessRules, _qualityControlService);
+        return new QualityControlState(this, _loggerService, _businessRules);
     }
 
     public IBusinessProcessState CreateRepairState()
     {
-        return new RepairState(this, _loggerService, _businessRules, _qualityControlService);
+        return new RepairState(this, _loggerService, _businessRules);
     }
 
     public IBusinessProcessState CreatePackagingState()
     {
-        return new PackagingState(this, _loggerService, _businessRules, _qualityControlService);
+        return new PackagingState(_loggerService);
     }
 }

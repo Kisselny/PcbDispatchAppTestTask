@@ -5,20 +5,29 @@ namespace PcbDispatchService.Domain.Logic.States;
 
 public class ComponentInstallationState : IBusinessProcessState
 {
+    private readonly IStateFactory _stateFactory;
     private readonly LoggerService _loggerService;
     private readonly BusinessRules _businessRules;
-    private readonly QualityControlService _qualityControlService;
 
-    public ComponentInstallationState(IStateFactory stateFactory, LoggerService loggerService, BusinessRules businessRules, QualityControlService qualityControlService)
+    public ComponentInstallationState(IStateFactory stateFactory, LoggerService loggerService, BusinessRules businessRules)
     {
+        _stateFactory = stateFactory;
         _loggerService = loggerService;
         _businessRules = businessRules;
-        _qualityControlService = qualityControlService;
     }
 
     public void AdvanceToNextState(Pcb pcb)
     {
-        pcb.SetBusinessState(new QualityControlState(_loggerService, _businessRules, _qualityControlService));
+        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+        if(result == _businessRules.okMessage)
+        {
+            _loggerService.LogThisSh_t("Установка компонентов пройдена успешно, переход к контролю качества.");
+            pcb.SetBusinessState(_stateFactory.CreateQualityControlState());
+        }
+        else
+        {
+            throw new BusinessException(result);
+        }
     }
 
     public BusinessProcessStatusEnum GetCurrentStatus()

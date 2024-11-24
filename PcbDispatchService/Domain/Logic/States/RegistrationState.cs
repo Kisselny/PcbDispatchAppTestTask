@@ -20,8 +20,16 @@ public class RegistrationState : IBusinessProcessState
 
     public void AdvanceToNextState(Pcb pcb)
     {
-        //if()
-        pcb.SetBusinessState(_stateFactory.CreateComponentInstallationState());
+        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+        if(result == _businessRules.okMessage)
+        {
+            _loggerService.LogThisSh_t("Регистрация пройдена, переход на этап добавления компонентов.");
+            pcb.SetBusinessState(_stateFactory.CreateComponentInstallationState());
+        }
+        else
+        {
+            throw new BusinessException(result);
+        }
     }
 
     public BusinessProcessStatusEnum GetCurrentStatus()
