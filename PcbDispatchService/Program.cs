@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using PcbDispatchService.Controllers;
@@ -19,13 +20,20 @@ public class Program
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        //builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, 
+                $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
+        });
+
+        builder.Services.AddControllers();
 
         builder.Services.AddSingleton<LoggerService>();
         builder.Services.AddScoped<QualityControlService>();
         builder.Services.AddScoped<PcbFactory>();
         builder.Services.AddScoped<BusinessRules>();
-        builder.Services.AddSingleton<IStateFactory, StateFactory>();
+        builder.Services.AddScoped<IStateFactory, StateFactory>();
         
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 

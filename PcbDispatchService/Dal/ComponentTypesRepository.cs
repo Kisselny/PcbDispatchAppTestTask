@@ -6,6 +6,7 @@ namespace PcbDispatchService.Dal;
 public interface IComponentTypesRepository
 {
     Task<ComponentType?> GetComponentTypeByName(string name);
+    Task<List<ComponentType?>> GetComponentTypesByNames(List<string> names);
 }
 
 public class ComponentTypesRepository : IComponentTypesRepository
@@ -20,5 +21,10 @@ public class ComponentTypesRepository : IComponentTypesRepository
     public async Task<ComponentType?> GetComponentTypeByName(string name)
     {
         return await _context.ComponentTypes.Where(i => i != null && i.Name == name).FirstOrDefaultAsync();
+    }
+    
+    public async Task<List<ComponentType?>> GetComponentTypesByNames(List<string> names)
+    {
+        return await _context.ComponentTypes.Where(i => names.Any(s => s == i.Name)).ToListAsync();
     }
 }

@@ -36,4 +36,8 @@ public class QualityControlState : IBusinessProcessState
     {
         return BusinessProcessStatusEnum.QualityControl;
     }
+    public string GetCurrentStatusString()
+    {
+        return GetCurrentStatus().ToString();
+    }
 }

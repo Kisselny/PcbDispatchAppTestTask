@@ -6,27 +6,18 @@
 public class ComponentType
 {
     private readonly string _typeName;
-    private readonly string _availableSupply;
+    private readonly int _availableSupply;
 
     public string Name => _typeName;
-    public string AvailableSupply => _availableSupply;
+    public int AvailableSupply => _availableSupply;
 
     /// <summary>
     /// Представляет уникальный тип компонента.
     /// </summary>
-    /// <param name="TypeName">Название типа.</param>
-    public ComponentType(string TypeName)
+    /// <param name="typeName">Название типа.</param>
+    private ComponentType(string typeName, int availableSupply)
     {
-        _typeName = TypeName;
+        _typeName = typeName;
+        _availableSupply = availableSupply;
     }
-
-    /*public bool FindComponent(string TypeName)
-    {
-        
-    }
-
-    public bool IsEnoughAvailable(int quantity)
-    {
-        
-    }*/
 }

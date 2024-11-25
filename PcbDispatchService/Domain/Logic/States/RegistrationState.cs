@@ -36,4 +36,8 @@ public class RegistrationState : IBusinessProcessState
     {
         return BusinessProcessStatusEnum.Registration;
     }
+    public string GetCurrentStatusString()
+    {
+        return GetCurrentStatus().ToString();
+    }
 }

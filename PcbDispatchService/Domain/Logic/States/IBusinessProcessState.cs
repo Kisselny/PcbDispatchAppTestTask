@@ -6,4 +6,5 @@ public interface IBusinessProcessState
 {
     void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard);
     BusinessProcessStatusEnum GetCurrentStatus();
+    string GetCurrentStatusString();
 }

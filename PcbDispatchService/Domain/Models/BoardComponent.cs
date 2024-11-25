@@ -20,9 +20,9 @@ public class BoardComponent
     /// </summary>
     /// <param name="typeName">Тип компонента.</param>
     /// <param name="quantity">Количество.</param>
-    public BoardComponent(string typeName, int quantity)
+    public BoardComponent(ComponentType type, int quantity)
     {
-        //ComponentType = new ComponentType(typeName, quantity);
+        ComponentType = type;
         Quantity = quantity;
     }
 }

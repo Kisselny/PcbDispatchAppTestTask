@@ -32,4 +32,8 @@ public class PackagingState : IBusinessProcessState
     {
         return BusinessProcessStatusEnum.Packaging;
     }
+    public string GetCurrentStatusString()
+    {
+        return GetCurrentStatus().ToString();
+    }
 }

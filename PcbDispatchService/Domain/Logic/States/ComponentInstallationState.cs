@@ -34,4 +34,9 @@ public class ComponentInstallationState : IBusinessProcessState
     {
         return BusinessProcessStatusEnum.ComponentInstallation;
     }
+
+    public string GetCurrentStatusString()
+    {
+        return GetCurrentStatus().ToString();
+    }
 }

@@ -35,4 +35,8 @@ public class RepairState : IBusinessProcessState
     {
         return BusinessProcessStatusEnum.Repair;
     }
+    public string GetCurrentStatusString()
+    {
+        return GetCurrentStatus().ToString();
+    }
 }

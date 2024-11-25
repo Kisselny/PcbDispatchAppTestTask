@@ -67,6 +67,11 @@ public class PrintedCircuitBoard
         return BusinessProcessState.GetCurrentStatus();
     }
 
+    public string GetBusinessStateString()
+    {
+        return BusinessProcessState.GetCurrentStatusString();
+    }
+
     /// <summary>
     /// Назначает новое состояние безнес-процесса.
     /// </summary>
