@@ -24,18 +24,18 @@ public class BusinessRules : IBusinessRules
     /// <summary>
     /// Проверяет, возможно ли перевести плату в следующее состояние безнес-процесса.
     /// </summary>
-    /// <param name="pcb">Экземпляр платы.</param>
+    /// <param name="printedCircuitBoard">Экземпляр платы.</param>
     /// <returns>Сообщение-статус проверки бизнес-правил.</returns>
     /// <exception cref="InvalidOperationException">Невозможно осуществить проверку.</exception>
-    public string CheckIfContinuationIsPossible(Pcb pcb)
+    public string CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard)
     {
-        switch (pcb.GetBusinessState())
+        switch (printedCircuitBoard.GetBusinessState())
         {
             case BusinessProcessStatusEnum.Registration:
             {
                 /*Вообще, конечно, в конструкторах платы уже завалидировано, что её имя не будет пустым,
                  но какая-то логика должна же быть))*/
-                if (pcb.Name != string.Empty)
+                if (printedCircuitBoard.Name != string.Empty)
                 {
                     return okMessage;
                 }
@@ -44,11 +44,11 @@ public class BusinessRules : IBusinessRules
             }
             case BusinessProcessStatusEnum.ComponentInstallation:
             {
-                return pcb.Components.Count != 0 ? okMessage : notOkMessageStart + notOkMessageComponents;
+                return printedCircuitBoard.Components.Count != 0 ? okMessage : notOkMessageStart + notOkMessageComponents;
             }
             case BusinessProcessStatusEnum.QualityControl:
             {
-                var result = _qualityControlService.QualityCheck(pcb);
+                var result = _qualityControlService.QualityCheck(printedCircuitBoard);
 
                 if (result == QualityControlStatus.QualityIsOk)
                 {
@@ -61,15 +61,15 @@ public class BusinessRules : IBusinessRules
             }
             case BusinessProcessStatusEnum.Repair:
             {
-                pcb.QualityControlStatus = _qualityControlService.TryRepair(pcb);
+                printedCircuitBoard.QualityControlStatus = _qualityControlService.TryRepair(printedCircuitBoard);
                 
-                if (pcb.QualityControlStatus == QualityControlStatus.QualityIsOk)
+                if (printedCircuitBoard.QualityControlStatus == QualityControlStatus.QualityIsOk)
                 {
                     return okMessage;
                 }
                 else
                 {
-                    pcb.QualityControlStatus = QualityControlStatus.Defective;
+                    printedCircuitBoard.QualityControlStatus = QualityControlStatus.Defective;
                     return notOkMessageStart + notOkMessageDefective;
                 }
             }

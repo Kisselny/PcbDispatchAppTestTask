@@ -15,7 +15,7 @@ public class PackagingState : IBusinessProcessState
     private bool PackagedAndReleased = false;
     
     //TODO можно еще какую-то логику внедрить.
-    public void AdvanceToNextState(Pcb pcb)
+    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
         if (PackagedAndReleased)
         {

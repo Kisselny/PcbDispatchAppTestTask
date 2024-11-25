@@ -16,13 +16,13 @@ public class ComponentInstallationState : IBusinessProcessState
         _businessRules = businessRules;
     }
 
-    public void AdvanceToNextState(Pcb pcb)
+    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
-        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+        var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
         if(result == _businessRules.okMessage)
         {
             _loggerService.LogThisSh_t("Установка компонентов пройдена успешно, переход к контролю качества.");
-            pcb.SetBusinessState(_stateFactory.CreateQualityControlState());
+            printedCircuitBoard.SetBusinessState(_stateFactory.CreateQualityControlState());
         }
         else
         {

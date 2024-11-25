@@ -8,9 +8,9 @@ public class QualityControlService
     /// <summary>
     /// Выполняет проверку качества.
     /// </summary>
-    /// <param name="pcb">Экземпляр платы.</param>
+    /// <param name="printedCircuitBoard">Экземпляр платы.</param>
     /// <returns>Статус контроля качества.</returns>
-    public QualityControlStatus QualityCheck(Pcb pcb)
+    public QualityControlStatus QualityCheck(PrintedCircuitBoard printedCircuitBoard)
     {
         if (великийКорейскийРандом() > 30)
         {
@@ -25,16 +25,16 @@ public class QualityControlService
     /// <summary>
     /// Выполняет попытку ремонта платы.
     /// </summary>
-    /// <param name="pcb">Экземпляр платы.</param>
+    /// <param name="printedCircuitBoard">Экземпляр платы.</param>
     /// <returns>Новый статус контроля качества.</returns>
     /// <exception cref="BusinessException"></exception>
-    public QualityControlStatus TryRepair(Pcb pcb)
+    public QualityControlStatus TryRepair(PrintedCircuitBoard printedCircuitBoard)
     {
-        switch (pcb.QualityControlStatus)
+        switch (printedCircuitBoard.QualityControlStatus)
         {
             case QualityControlStatus.QualityIsBad:
             {
-                return QualityCheck(pcb);
+                return QualityCheck(printedCircuitBoard);
             }
             case QualityControlStatus.Defective:
                 throw new BusinessException("Невозможно починить плату, т.к. она уже признана бракованной.");

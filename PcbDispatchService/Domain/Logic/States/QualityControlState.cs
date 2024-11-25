@@ -17,18 +17,18 @@ public class QualityControlState : IBusinessProcessState
     }
 
 
-    public void AdvanceToNextState(Pcb pcb)
+    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
-        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+        var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
         if (result == _businessRules.okMessage)
         {
             _loggerService.LogThisSh_t("Качество в порядке, переход к шагу \"Упаковка\"");
-            pcb.SetBusinessState(_stateFactory.CreatePackagingState());
+            printedCircuitBoard.SetBusinessState(_stateFactory.CreatePackagingState());
         }
         else
         {
             _loggerService.LogThisSh_t(result);
-            pcb.SetBusinessState(_stateFactory.CreateRepairState());
+            printedCircuitBoard.SetBusinessState(_stateFactory.CreateRepairState());
         }
     }
 

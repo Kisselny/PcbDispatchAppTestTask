@@ -6,7 +6,7 @@ namespace PcbDispatchService.Domain.Models;
 /// <summary>
 /// Представляет сущность печатной платы.
 /// </summary>
-public class Pcb
+public class PrintedCircuitBoard
 {
     private readonly IStateFactory _stateFactory;
 
@@ -25,7 +25,7 @@ public class Pcb
     /// <summary>
     /// Компоненты платы.
     /// </summary>
-    public List<PcbComponent> Components { get; }
+    public List<BoardComponent> Components { get; }
 
     /// <summary>
     /// Статус бизнес-процесса.
@@ -42,15 +42,15 @@ public class Pcb
 
     #region .ctor
     /// <summary>
-    /// Инициализирует экзампляр класса <see cref="Pcb"/>
+    /// Инициализирует экзампляр класса <see cref="PrintedCircuitBoard"/>
     /// </summary>
     /// <param name="name">Название печатной платы.</param>
     /// <param name="stateFactory">Фабрика состояний.</param>
-    public Pcb(string name, IStateFactory stateFactory)
+    public PrintedCircuitBoard(string name, IStateFactory stateFactory)
     {
         Id = generateId();
         Name = validateNameNotEmpty(name);
-        Components = new List<PcbComponent>();
+        Components = new List<BoardComponent>();
         _stateFactory = stateFactory;
         BusinessProcessState = _stateFactory.CreateRegistrationState();
         QualityControlStatus = QualityControlStatus.NotSureYet;
@@ -99,7 +99,7 @@ public class Pcb
     /// </summary>
     /// <param name="newComponent">Новый компонент.</param>
     /// <exception cref="BusinessException">Невозможно добавить компонент.</exception>
-    public void AddComponentToPcb(PcbComponent newComponent)
+    public void AddComponentToPcb(BoardComponent newComponent)
     {
         if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {
@@ -117,7 +117,7 @@ public class Pcb
     /// </summary>
     /// <param name="newComponents">Новые компоненты</param>
     /// <exception cref="BusinessException">Невозможно добавить компоненты.</exception>
-    public void AddComponentsToPcb(IEnumerable<PcbComponent> newComponents)
+    public void AddComponentsToPcb(IEnumerable<BoardComponent> newComponents)
     {
         if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {

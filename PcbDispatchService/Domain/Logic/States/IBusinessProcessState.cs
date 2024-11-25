@@ -4,6 +4,6 @@ namespace PcbDispatchService.Domain.Logic.States;
 
 public interface IBusinessProcessState
 {
-    void AdvanceToNextState(Pcb pcb);
+    void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard);
     BusinessProcessStatusEnum GetCurrentStatus();
 }

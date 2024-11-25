@@ -18,13 +18,13 @@ public class RegistrationState : IBusinessProcessState
         _stateFactory = stateFactory;
     }
 
-    public void AdvanceToNextState(Pcb pcb)
+    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
-        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+        var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
         if(result == _businessRules.okMessage)
         {
             _loggerService.LogThisSh_t("Регистрация пройдена, переход на этап добавления компонентов.");
-            pcb.SetBusinessState(_stateFactory.CreateComponentInstallationState());
+            printedCircuitBoard.SetBusinessState(_stateFactory.CreateComponentInstallationState());
         }
         else
         {

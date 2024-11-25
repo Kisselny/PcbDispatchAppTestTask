@@ -4,5 +4,5 @@ namespace PcbDispatchService.Domain.Logic;
 
 public interface IBusinessRules
 {
-    string CheckIfContinuationIsPossible(Pcb pcb);
+    string CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard);
 }
