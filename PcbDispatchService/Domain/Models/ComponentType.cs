@@ -8,6 +8,9 @@ public class ComponentType
     private readonly string _typeName;
     private readonly string _availableSupply;
 
+    public string Name => _typeName;
+    public string AvailableSupply => _availableSupply;
+
     /// <summary>
     /// Представляет уникальный тип компонента.
     /// </summary>

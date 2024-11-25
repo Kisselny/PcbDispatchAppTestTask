@@ -9,7 +9,7 @@ public class ApplicationDbContext : DbContext
     {
     }
     
-    public DbSet<ComponentType> ComponentTypes { get; set; }
+    public DbSet<ComponentType?> ComponentTypes { get; set; }
     public DbSet<PrintedCircuitBoard> PrintedCircuitBoards { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

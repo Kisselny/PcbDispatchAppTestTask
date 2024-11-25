@@ -1,4 +1,7 @@
 using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore;
+using PcbDispatchService.Controllers;
+using PcbDispatchService.Dal;
 using PcbDispatchService.Domain.Logic;
 using PcbDispatchService.Domain.Logic.States;
 using PcbDispatchService.Services;
@@ -23,6 +26,14 @@ public class Program
         builder.Services.AddScoped<PcbFactory>();
         builder.Services.AddScoped<BusinessRules>();
         builder.Services.AddSingleton<IStateFactory, StateFactory>();
+        
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString));
+        builder.Services.AddScoped<IComponentTypesRepository, ComponentTypesRepository>();
+        builder.Services.AddScoped<IPcbRepository, PcbRepository>();
+
 
         var app = builder.Build();
 
@@ -36,26 +47,6 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
-        var summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-            {
-                var forecast = Enumerable.Range(1, 5).Select(index =>
-                        new WeatherForecast
-                        {
-                            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                            TemperatureC = Random.Shared.Next(-20, 55),
-                            Summary = summaries[Random.Shared.Next(summaries.Length)]
-                        })
-                    .ToArray();
-                return forecast;
-            })
-            .WithName("GetWeatherForecast")
-            .WithOpenApi();
 
         app.Run();
     }
