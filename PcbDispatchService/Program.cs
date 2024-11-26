@@ -32,7 +32,7 @@ public class Program
         builder.Services.AddScoped<IMyCustomLoggerService, MyCustomLoggerService>();
         builder.Services.AddScoped<IQualityControlService, QualityControlService>();
         builder.Services.AddScoped<IPcbFactory, PcbFactory>();
-        builder.Services.AddScoped<IPcbService, PcbService>();
+        builder.Services.AddScoped<PcbService>();
         builder.Services.AddScoped<IBusinessRules, BusinessRules>();
         
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

@@ -8,7 +8,7 @@ namespace PcbDispatchService.Domain.Logic;
 /// <inheritdoc />
 public class BusinessRules : IBusinessRules
 {
-    private readonly QualityControlService _qualityControlService;
+    private readonly IQualityControlService _qualityControlService;
     private readonly string notOkMessageStart = "Невозможно продвинуться по бизнес-процессу: ";
     private readonly string notOkMessageRegistration = "Имя платы не должно быть пустым.";
     private readonly string notOkMessageComponents = "К плате необходимо добавить компоненты";
@@ -20,7 +20,7 @@ public class BusinessRules : IBusinessRules
     /// Создает новый экземпляр сервиса бизнес-правил.
     /// </summary>
     /// <param name="qualityControlService">Сервис контроля качества.</param>
-    public BusinessRules(QualityControlService qualityControlService)
+    public BusinessRules(IQualityControlService qualityControlService)
     {
         _qualityControlService = qualityControlService;
     }

@@ -10,11 +10,11 @@ namespace PcbDispatchService.Services;
 /// </summary>
 public class PcbService : IPcbService
 {
-    private readonly PcbFactory _pcbFactory;
+    private readonly IPcbFactory _pcbFactory;
     private readonly IPcbRepository _pcbRepository;
     private readonly IComponentTypesRepository _componentTypesRepository;
-    private readonly MyCustomLoggerService _myCustomLoggerService;
-    private readonly BusinessRules _businessRules;
+    private readonly IMyCustomLoggerService _myCustomLoggerService;
+    private readonly IBusinessRules _businessRules;
 
     /// <summary>
     /// Создает экземпляр сервиса <see cref="PcbService"/>
@@ -24,7 +24,7 @@ public class PcbService : IPcbService
     /// <param name="componentTypesRepository">Репозиторий компонентов плат.</param>
     /// <param name="myCustomLoggerService">Сервис логирования.</param>
     /// <param name="businessRules">Сервис бизнес-правил.</param>
-    public PcbService(PcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
+    public PcbService(IPcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, IMyCustomLoggerService myCustomLoggerService, IBusinessRules businessRules)
     {
         _pcbFactory = pcbFactory;
         _pcbRepository = pcbRepository;
