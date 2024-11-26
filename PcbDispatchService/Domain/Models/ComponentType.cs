@@ -25,6 +25,30 @@ public class ComponentType
     {
         return new ComponentType(typeName, availableSupply);
     }
+    public void IncreaseSupply(int value)
+    {
+        if (value > 0)
+        {
+            AvailableSupply += value;
+        }
+        else
+        {
+            AvailableSupply -= value;
+        }
+    }
+    
+    public void DecreaseSupply(int value)
+    {
+        if (value > 0)
+        {
+            AvailableSupply -= value;
+        }
+        else
+        {
+            AvailableSupply += value;
+        }
+    }
     
     public ComponentType() { }
+
 }

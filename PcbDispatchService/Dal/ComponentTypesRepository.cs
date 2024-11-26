@@ -42,4 +42,36 @@ public class ComponentTypesRepository : IComponentTypesRepository
     {
         return await _context.ComponentTypes.AsNoTracking().ToListAsync(); 
     }
+
+
+    /// <inheritdoc />
+    public async Task IncreaseComponentSupplyByValue(List<BoardComponent> boardComponents)
+    {
+        var storageComponents = await _context.ComponentTypes
+            .Where(i => boardComponents.Any(bc => bc.ComponentType.Name == i.Name)).ToListAsync();
+        if (storageComponents is null)
+        {
+            throw new ApplicationException($"storageComponents is null");
+        }
+
+        foreach (var storageComponent in storageComponents)
+        {
+            int value = boardComponents.First(i => i.ComponentType.Name == storageComponent.Name).Quantity;
+            storageComponent.IncreaseSupply(value);
+        }
+        _context.ComponentTypes.UpdateRange(storageComponents);
+        await _context.SaveChangesAsync();
+    }
+    
+    public async Task DecreaseComponentSupplyByValue(string componentTypeName, int value)
+    {
+        var component = await _context.ComponentTypes.Where(i => i.Name == componentTypeName).FirstOrDefaultAsync();
+        if (component is null)
+        {
+            throw new ApplicationException($"Компонент типа {componentTypeName} не найден в системе.");
+        }
+        component.DecreaseSupply(value);
+        _context.ComponentTypes.Update(component);
+        await _context.SaveChangesAsync();
+    }
 }

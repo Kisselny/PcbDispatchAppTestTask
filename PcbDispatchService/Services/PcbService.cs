@@ -44,29 +44,22 @@ public class PcbService
         return result;
     }
 
+    /// <summary>
+    /// Добавляет компонент к печатной плате.
+    /// </summary>
+    /// <param name="boardId">Идентификатор платы.</param>
+    /// <param name="componentTypeName">Название типа компонента.</param>
+    /// <param name="quantity">Количество типа компонента, добавляемого к плате.</param>
+    /// <remarks>Соответственно, уменьшает количество компонентов данного типа на складе.</remarks>
     public async Task AddComponent(int boardId, string componentTypeName, int quantity)
     {
-        var board = await GetCircuitBoardById(boardId);
         var componentType = await _componentTypesRepository.GetComponentTypeByName(componentTypeName);
-        if (board is not null && componentType is not null)
+
+        if (componentType.AvailableSupply >= quantity)
         {
-            _pcbFactory.AddComponentToBoard(board, componentType, quantity);
-        }
-    }
-    
-    public async Task AddComponents(int boardId, List<BoardComponentDto> componentDtoList)
-    {
-        var board = await GetCircuitBoardById(boardId);
-        var componentTypes = await _componentTypesRepository.GetComponentTypesByNames(componentDtoList.Select(i => i.ComponentTypeName).ToList());
-        if(componentTypes.Count == 0)
-        {
-            throw new ApplicationException("Компоненты не найдены.");
-        }
-        List<BoardComponent> componentModelList = componentDtoList
-            .Select(i => new BoardComponent(componentTypes.First(t => i.ComponentTypeName == t.Name), i.Quantity)).ToList();
-        if (board is not null)
-        {
-            _pcbFactory.AddComponentsToBoard(board, componentModelList, componentTypes);
+            BoardComponent newBc = new BoardComponent(componentType, quantity);
+            await _pcbRepository.AddComponentToBoard(boardId, newBc);
+            await _componentTypesRepository.DecreaseComponentSupplyByValue(componentTypeName, quantity);
         }
     }
 
@@ -76,16 +69,27 @@ public class PcbService
         _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переименована.");
     }
 
+    /// <summary>
+    /// Удаляет все компоненты с печатной платы для добавления заново.
+    /// </summary>
+    /// <param name="boardId">Идентификатор платы.</param>
+    /// <remarks>Возвращает удаленные компоненты на склад.</remarks>
     public async Task RemoveAllComponentsFromBoard(int boardId)
     {
-        await _pcbRepository.RemoveComponentsFromBoard(boardId);
-        _myCustomLoggerService.LogThisSh_t($"С платы (id = {boardId}) удалены все компоненты.");
+        var boardToRemoveComponentsFrom = await _pcbRepository.GetPcbById(boardId);
+        if(boardToRemoveComponentsFrom is not null)
+        {
+            var componentsToReturnToStorage = boardToRemoveComponentsFrom.Components;
+            await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
+            await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
+            _myCustomLoggerService.LogThisSh_t($"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
+        }
     }
 
     public async Task DeleteBoard(int boardId)
     {
-        await _pcbRepository.DeletePcbById(boardId);
-        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
+            await _pcbRepository.DeletePcbById(boardId);
+            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
     }
 
     public async Task AdvanceToNextStatus(int boardId)

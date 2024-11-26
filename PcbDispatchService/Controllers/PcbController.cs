@@ -81,29 +81,7 @@ public class PcbController : Controller
     [HttpPut("{boardId}/add-single-component")]
     public async Task<IActionResult> AddComponentToCircuitBoard(int boardId, [FromBody] BoardComponentDto dto)
     {
-        var pcb = await _pcbService.GetCircuitBoardById(boardId);
-        if(pcb != null)
-        {
-            await _pcbService.AddComponent(pcb.Id, dto.ComponentTypeName, dto.Quantity);
-            return NoContent();
-        }
-        else
-        {
-            return NotFound();
-        }
-    }
-
-    /// <summary>
-    /// Добавляет набор компонентов к существующей печатной плате.
-    /// </summary>
-    /// <param name="boardId">Идентификатор платы.</param>
-    /// <param name="dtos">Список компонентов.</param>
-    /// <returns>Результат добавления компонентов.</returns>
-    /// <remarks>Добавлять компоненты можно только на этапе добавления компонентов.</remarks>
-    [HttpPut("{boardId}/add-many-components")]
-    public async Task<IActionResult> AddComponentsToCircuitBoard(int boardId, [FromBody] List<BoardComponentDto> dtos)
-    {
-        await _pcbService.AddComponents(boardId, dtos);
+        await _pcbService.AddComponent(boardId, dto.ComponentTypeName, dto.Quantity);
         return NoContent();
     }
 
@@ -154,9 +132,9 @@ public class PcbController : Controller
     /// <param name="id">Идентификатор платы.</param>
     /// <returns>Результат перевода платы в новое состояние.</returns>
     [HttpPut("{boardId}/next-stage/")]
-    public async Task<IActionResult> MoveToNextBusinessState(int id)
+    public async Task<IActionResult> MoveToNextBusinessState(int boardId)
     {
-        await _pcbService.AdvanceToNextStatus(id);
+        await _pcbService.AdvanceToNextStatus(boardId);
         return Ok("Плата переведена в новое состояние.");
     }
 }

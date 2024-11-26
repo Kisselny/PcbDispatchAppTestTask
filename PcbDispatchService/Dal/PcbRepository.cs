@@ -12,8 +12,8 @@ public interface IPcbRepository
     Task DeletePcbById(int id);
     Task RenameBoard(int id, string newName);
     Task RemoveComponentsFromBoard(int id);
-
     Task UpdateBoardStateById(int id);
+    Task AddComponentToBoard(int boardId, BoardComponent boardComponent);
 }
 
 public class PcbRepository : IPcbRepository
@@ -44,7 +44,10 @@ public class PcbRepository : IPcbRepository
     
     public async Task<List<PrintedCircuitBoard>> GetAllPcbs()
     {
-        var allPcbs = await _context.PrintedCircuitBoards.ToListAsync();
+        var allPcbs = await _context.PrintedCircuitBoards
+            .Include(i => i.Components)
+            .Include(i => i.BusinessProcessStateBase)
+            .ToListAsync();
         if (allPcbs.Count > 0)
         {
             return allPcbs;
@@ -63,7 +66,7 @@ public class PcbRepository : IPcbRepository
     
     public async Task DeletePcbById(int id)
     {
-        var pcb = await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id).FirstOrDefaultAsync();
+        var pcb = await _context.PrintedCircuitBoards.Where(i => i.Id == id).FirstOrDefaultAsync();
         if (pcb != null)
         {
             _context.PrintedCircuitBoards.Remove(pcb);
@@ -118,6 +121,25 @@ public class PcbRepository : IPcbRepository
         else
         {
             throw new ApplicationException($"Не удалось изменить статус, плата {id} не найдена.");
+        }
+    }
+
+    public async Task AddComponentToBoard(int boardId, BoardComponent boardComponent)
+    {
+        var pcb = await _context.PrintedCircuitBoards
+            .Where(i => i.Id == boardId)
+            .Include(i => i.Components)
+            .Include(i => i.BusinessProcessStateBase)
+            .FirstOrDefaultAsync();
+        if(pcb is not null)
+        {
+            pcb.Components.Add(boardComponent);
+            _context.PrintedCircuitBoards.Update(pcb);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ApplicationException($"Плата {boardId} не найдена.");
         }
     }
 }

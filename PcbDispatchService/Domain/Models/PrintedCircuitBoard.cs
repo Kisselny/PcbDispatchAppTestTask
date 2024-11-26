@@ -115,24 +115,6 @@ public class PrintedCircuitBoard
     }
 
     /// <summary>
-    /// Добавляет новую коллекцию компонентов к печатной плате.
-    /// </summary>
-    /// <param name="newComponents">Новые компоненты</param>
-    /// <exception cref="BusinessException">Невозможно добавить компоненты.</exception>
-    public void AddComponentsToPcb(IEnumerable<BoardComponent> newComponents)
-    {
-        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
-        {
-            Components.AddRange(newComponents);
-        }
-        else
-        {
-            throw new BusinessException(
-                "Невозможно добавить компоненты: плата не находится на этапе добавления компонентов.");
-        }
-    }
-
-    /// <summary>
     /// Удаляет все добавленные компоненты с текущей платы.
     /// </summary>
     /// <exception cref="BusinessException">Невозможно удалить компоненты.</exception>
