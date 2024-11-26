@@ -64,9 +64,17 @@ public class PcbRepository : IPcbRepository
     
     public async Task DeletePcbById(int id)
     {
-        var pcb = await _context.PrintedCircuitBoards.Where(i => i.Id == id).FirstOrDefaultAsync();
+        var pcb = await _context.PrintedCircuitBoards
+            .Where(i => i.Id == id)
+            .Include(i => i.Components)
+            .FirstOrDefaultAsync();
         if (pcb != null)
         {
+            if (pcb.Components.Count > 0)
+            {
+                var componentsToDelete = pcb.Components;
+                _context.BoardComponents.RemoveRange(componentsToDelete);
+            }
             _context.PrintedCircuitBoards.Remove(pcb);
             await _context.SaveChangesAsync();
         }

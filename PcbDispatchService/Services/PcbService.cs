@@ -110,13 +110,9 @@ public class PcbService
         return $"Плата (id = {boardId}) уже прошла весь процесс.";
     }
 
-    public BoardInfoDto2 FormatBoardDto(PrintedCircuitBoard pcb)
+    public BoardInfoDto FormatBoardDto(PrintedCircuitBoard pcb)
     {
-        BoardInfoDto result = new BoardInfoDto(Id: pcb.Id, Name: pcb.Name,
-            ComponentNumber: pcb.Components.Count, CurrentStatus: pcb.BusinessProcessStatus.ToString(),
-            QualityControlStatus: pcb.QualityControlStatus.ToString());
-        
-        BoardInfoDto2 result2 = new BoardInfoDto2(Id: pcb.Id, Name: pcb.Name,
+        BoardInfoDto result2 = new BoardInfoDto(Id: pcb.Id, Name: pcb.Name,
             ComponentNumber: pcb.Components.Count, pcb.Components, CurrentStatus: pcb.BusinessProcessStatus.ToString(),
             QualityControlStatus: pcb.QualityControlStatus.ToString());
         return result2;

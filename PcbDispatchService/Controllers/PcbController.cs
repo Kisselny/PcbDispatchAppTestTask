@@ -62,7 +62,7 @@ public class PcbController : Controller
         {
             return NotFound();
         }
-        var result = new List<BoardInfoDto2>(boards.Count);
+        var result = new List<BoardInfoDto>(boards.Count);
         foreach (var board in boards)
         {
             var entry = _pcbService.FormatBoardDto(board);
