@@ -9,22 +9,22 @@ public class PcbService
     private readonly PcbFactory _pcbFactory;
     private readonly IPcbRepository _pcbRepository;
     private readonly IComponentTypesRepository _componentTypesRepository;
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
 
-    public PcbService(PcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, LoggerService loggerService)
+    public PcbService(PcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, MyCustomLoggerService myCustomLoggerService)
     {
         _pcbFactory = pcbFactory;
         _pcbRepository = pcbRepository;
         _componentTypesRepository = componentTypesRepository;
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
     }
 
     public async Task<int> CreateCircuitBoard(string name)
     {
         var brandNewBoard = _pcbFactory.CreateCircuitBoard(name);
-        _loggerService.LogThisSh_t($"Фабрика создала новую плату с именем {name}.");
+        _myCustomLoggerService.LogThisSh_t($"Фабрика создала новую плату с именем {name}.");
         await _pcbRepository.AddNewBoard(brandNewBoard);
-        _loggerService.LogThisSh_t($"Плата добавлена в репозиторий.");
+        _myCustomLoggerService.LogThisSh_t($"Плата добавлена в репозиторий.");
         return brandNewBoard.Id;
     }
 
@@ -35,6 +35,12 @@ public class PcbService
         {
             throw new ArgumentNullException(nameof(result));
         }
+        return result;
+    }
+
+    public async Task<List<PrintedCircuitBoard>> GetALlBoards()
+    {
+        var result = await _pcbRepository.GetAllPcbs();
         return result;
     }
 
@@ -52,6 +58,10 @@ public class PcbService
     {
         var board = await GetCircuitBoardById(boardId);
         var componentTypes = await _componentTypesRepository.GetComponentTypesByNames(componentDtoList.Select(i => i.ComponentTypeName).ToList());
+        if(componentTypes.Count == 0)
+        {
+            throw new ApplicationException("Компоненты не найдены.");
+        }
         List<BoardComponent> componentModelList = componentDtoList
             .Select(i => new BoardComponent(componentTypes.First(t => i.ComponentTypeName == t.Name), i.Quantity)).ToList();
         if (board is not null)
@@ -63,22 +73,32 @@ public class PcbService
     public async Task RenameBoard(int boardId, string newName)
     {
         await _pcbRepository.RenameBoard(boardId, newName);
+        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переименована.");
     }
 
     public async Task RemoveAllComponentsFromBoard(int boardId)
     {
         await _pcbRepository.RemoveComponentsFromBoard(boardId);
-        _loggerService.LogThisSh_t($"С платы (id = {boardId}) удалены все компоненты.");
+        _myCustomLoggerService.LogThisSh_t($"С платы (id = {boardId}) удалены все компоненты.");
     }
 
     public async Task DeleteBoard(int boardId)
     {
         await _pcbRepository.DeletePcbById(boardId);
-        _loggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
+        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
     }
 
-    public async Task GetCurrentStatus(int boardid)
+    public async Task AdvanceToNextStatus(int boardId)
     {
-        
+        await _pcbRepository.UpdateBoardStateById(boardId);
+        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние.");
+    }
+
+    public BoardInfoDto FormatBoardDto(PrintedCircuitBoard pcb)
+    {
+        BoardInfoDto result = new BoardInfoDto(Id: pcb.Id, Name: pcb.Name,
+            ComponentNumber: pcb.Components.Count, CurrentStatus: pcb.GetBusinessState().ToString(),
+            QualityControlStatus: pcb.QualityControlStatus.ToString());
+        return result;
     }
 }

@@ -3,12 +3,6 @@ using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Dal;
 
-public interface IComponentTypesRepository
-{
-    Task<ComponentType?> GetComponentTypeByName(string name);
-    Task<List<ComponentType?>> GetComponentTypesByNames(List<string> names);
-}
-
 public class ComponentTypesRepository : IComponentTypesRepository
 {
     private readonly ApplicationDbContext _context;
@@ -20,11 +14,32 @@ public class ComponentTypesRepository : IComponentTypesRepository
 
     public async Task<ComponentType?> GetComponentTypeByName(string name)
     {
-        return await _context.ComponentTypes.Where(i => i != null && i.Name == name).FirstOrDefaultAsync();
+        var component = await _context.ComponentTypes.AsNoTracking().Where(i => i.Name == name).FirstOrDefaultAsync();
+        if (component is null)
+        {
+            throw new ApplicationException($"Компонент типа {name} не найден в системе.");
+        }
+
+        return component;
     }
+
     
-    public async Task<List<ComponentType?>> GetComponentTypesByNames(List<string> names)
+    public async Task<List<ComponentType>> GetComponentTypesByNames(List<string> names)
     {
-        return await _context.ComponentTypes.Where(i => names.Any(s => s == i.Name)).ToListAsync();
+        if (names.Count == 0)
+        {
+            return new List<ComponentType>();
+        }
+
+        var components = await _context.ComponentTypes
+            .Where(i => names.Contains(i.Name))
+            .ToListAsync();
+
+        return components;
+    }
+
+    public async Task<List<ComponentType>> GetAllComponents()
+    {
+        return await _context.ComponentTypes.AsNoTracking().ToListAsync(); 
     }
 }

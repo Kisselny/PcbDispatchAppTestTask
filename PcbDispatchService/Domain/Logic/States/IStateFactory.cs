@@ -2,9 +2,9 @@
 
 public interface IStateFactory
 {
-    IBusinessProcessState CreateRegistrationState();
-    IBusinessProcessState CreateComponentInstallationState();
-    IBusinessProcessState CreateQualityControlState();
-    IBusinessProcessState CreateRepairState();
-    IBusinessProcessState CreatePackagingState();
+    BusinessProcessStateBase CreateRegistrationState();
+    BusinessProcessStateBase CreateComponentInstallationState();
+    BusinessProcessStateBase CreateQualityControlState();
+    BusinessProcessStateBase CreateRepairState();
+    BusinessProcessStateBase CreatePackagingState();
 }

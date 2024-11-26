@@ -3,32 +3,36 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic.States;
 
-public class PackagingState : IBusinessProcessState
+public class PackagingState : BusinessProcessStateBase
 {
-    private readonly LoggerService _loggerService;
+    private bool PackagedAndReleased = false;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
 
-    public PackagingState(LoggerService loggerService)
+    public PackagingState(MyCustomLoggerService myCustomLoggerService)
     {
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
     }
 
-    private bool PackagedAndReleased = false;
-    
+    public PackagingState()
+    {
+    }
+
+
     //TODO можно еще какую-то логику внедрить.
-    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
+    public override void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
         if (PackagedAndReleased)
         {
-            _loggerService.LogThisSh_t("Данная плата уже была отгружена. Повторная отгрузка невозможна.");
+            _myCustomLoggerService.LogThisSh_t("Данная плата уже была отгружена. Повторная отгрузка невозможна.");
         }
         else
         {
-            _loggerService.LogThisSh_t("Плата успешно произведена и отгружена.");
+            _myCustomLoggerService.LogThisSh_t("Плата успешно произведена и отгружена.");
             PackagedAndReleased = true;
         }
     }
 
-    public BusinessProcessStatusEnum GetCurrentStatus()
+    public override BusinessProcessStatusEnum GetCurrentStatus()
     {
         return BusinessProcessStatusEnum.Packaging;
     }

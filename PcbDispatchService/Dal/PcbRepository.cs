@@ -6,13 +6,14 @@ namespace PcbDispatchService.Dal;
 
 public interface IPcbRepository
 {
-    Task<PrintedCircuitBoard?> GetPcbByName(string name);
     Task<PrintedCircuitBoard?> GetPcbById(int id);
     Task<List<PrintedCircuitBoard>> GetAllPcbs();
     Task AddNewBoard(PrintedCircuitBoard pcb);
     Task DeletePcbById(int id);
     Task RenameBoard(int id, string newName);
     Task RemoveComponentsFromBoard(int id);
+
+    Task UpdateBoardStateById(int id);
 }
 
 public class PcbRepository : IPcbRepository
@@ -23,20 +24,35 @@ public class PcbRepository : IPcbRepository
     {
         _context = context;
     }
-
-    public async Task<PrintedCircuitBoard?> GetPcbByName(string name)
-    {
-        return await _context.PrintedCircuitBoards.Where(i => i != null && i.Name == name).FirstOrDefaultAsync();
-    }
     
     public async Task<PrintedCircuitBoard?> GetPcbById(int id)
     {
-        return await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id).FirstOrDefaultAsync();
+        var pcb = await _context.PrintedCircuitBoards
+            .Where(i => i.Id == id)
+            .Include(i => i.Components)
+            .Include(i => i.BusinessProcessStateBase)
+            .FirstOrDefaultAsync();
+        if(pcb is not null)
+        {
+            return pcb;
+        }
+        else
+        {
+            throw new ApplicationException($"Плата {id} не найдена.");
+        }
     }
     
     public async Task<List<PrintedCircuitBoard>> GetAllPcbs()
     {
-        return await _context.PrintedCircuitBoards.ToListAsync();
+        var allPcbs = await _context.PrintedCircuitBoards.ToListAsync();
+        if (allPcbs.Count > 0)
+        {
+            return allPcbs;
+        }
+        else
+        {
+            throw new ApplicationException("В системе нет зарегистрированных плат.");
+        }
     }
 
     public async Task AddNewBoard(PrintedCircuitBoard pcb)
@@ -53,6 +69,10 @@ public class PcbRepository : IPcbRepository
             _context.PrintedCircuitBoards.Remove(pcb);
             await _context.SaveChangesAsync();
         }
+        else
+        {
+            throw new ApplicationException($"Не удалось удалить плату {id}, т.к. она не найдена.");
+        }
     }
 
     public async Task RenameBoard(int id, string newName)
@@ -64,6 +84,10 @@ public class PcbRepository : IPcbRepository
             _context.PrintedCircuitBoards.Update(pcb);
             await _context.SaveChangesAsync();
         }
+        else
+        {
+            throw new ApplicationException($"Не удалось переименовать, плата {id} не найдена.");
+        }
     }
 
     public async Task RemoveComponentsFromBoard(int id)
@@ -74,6 +98,26 @@ public class PcbRepository : IPcbRepository
             pcb.RemoveAllComponentsFromBoard();
             _context.PrintedCircuitBoards.Update(pcb);
             await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ApplicationException($"Не удалось удалить компоненты, плата {id} не найдена.");
+        }
+    }
+
+    public async Task UpdateBoardStateById(int id)
+    {
+        var pcb = await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id)
+            .Include(printedCircuitBoard => printedCircuitBoard.BusinessProcessStateBase).FirstOrDefaultAsync();
+        if (pcb != null)
+        {
+            pcb.BusinessProcessStateBase.AdvanceToNextState(pcb);
+            _context.PrintedCircuitBoards.Update(pcb);
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ApplicationException($"Не удалось изменить статус, плата {id} не найдена.");
         }
     }
 }

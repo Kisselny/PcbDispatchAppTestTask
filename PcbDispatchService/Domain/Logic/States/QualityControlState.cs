@@ -3,41 +3,40 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic.States;
 
-public class QualityControlState : IBusinessProcessState
+public class QualityControlState : BusinessProcessStateBase
 {
     private readonly IStateFactory _stateFactory;
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
     private readonly BusinessRules _businessRules;
 
-    public QualityControlState(IStateFactory stateFactory, LoggerService loggerService, BusinessRules businessRules)
+    public QualityControlState(IStateFactory stateFactory, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
     {
         _stateFactory = stateFactory;
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
         _businessRules = businessRules;
     }
 
+    public QualityControlState()
+    {
+    }
 
-    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
+    public override void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
         var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
         if (result == _businessRules.okMessage)
         {
-            _loggerService.LogThisSh_t("Качество в порядке, переход к шагу \"Упаковка\"");
+            _myCustomLoggerService.LogThisSh_t("Качество в порядке, переход к шагу \"Упаковка\"");
             printedCircuitBoard.SetBusinessState(_stateFactory.CreatePackagingState());
         }
         else
         {
-            _loggerService.LogThisSh_t(result);
+            _myCustomLoggerService.LogThisSh_t(result);
             printedCircuitBoard.SetBusinessState(_stateFactory.CreateRepairState());
         }
     }
 
-    public BusinessProcessStatusEnum GetCurrentStatus()
+    public override BusinessProcessStatusEnum GetCurrentStatus()
     {
         return BusinessProcessStatusEnum.QualityControl;
-    }
-    public string GetCurrentStatusString()
-    {
-        return GetCurrentStatus().ToString();
     }
 }

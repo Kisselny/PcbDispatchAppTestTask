@@ -3,25 +3,29 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic.States;
 
-public class ComponentInstallationState : IBusinessProcessState
+public class ComponentInstallationState : BusinessProcessStateBase
 {
     private readonly IStateFactory _stateFactory;
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
     private readonly BusinessRules _businessRules;
 
-    public ComponentInstallationState(IStateFactory stateFactory, LoggerService loggerService, BusinessRules businessRules)
+    public ComponentInstallationState(IStateFactory stateFactory, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
     {
         _stateFactory = stateFactory;
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
         _businessRules = businessRules;
     }
 
-    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
+    public ComponentInstallationState()
+    {
+    }
+
+    public override void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
         var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
         if(result == _businessRules.okMessage)
         {
-            _loggerService.LogThisSh_t("Установка компонентов пройдена успешно, переход к контролю качества.");
+            _myCustomLoggerService.LogThisSh_t("Установка компонентов пройдена успешно, переход к контролю качества.");
             printedCircuitBoard.SetBusinessState(_stateFactory.CreateQualityControlState());
         }
         else
@@ -30,13 +34,8 @@ public class ComponentInstallationState : IBusinessProcessState
         }
     }
 
-    public BusinessProcessStatusEnum GetCurrentStatus()
+    public override BusinessProcessStatusEnum GetCurrentStatus()
     {
         return BusinessProcessStatusEnum.ComponentInstallation;
-    }
-
-    public string GetCurrentStatusString()
-    {
-        return GetCurrentStatus().ToString();
     }
 }

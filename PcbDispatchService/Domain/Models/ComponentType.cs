@@ -5,19 +5,26 @@
 /// </summary>
 public class ComponentType
 {
-    private readonly string _typeName;
-    private readonly int _availableSupply;
-
-    public string Name => _typeName;
-    public int AvailableSupply => _availableSupply;
-
     /// <summary>
-    /// Представляет уникальный тип компонента.
+    /// Название типа компонента.
     /// </summary>
-    /// <param name="typeName">Название типа.</param>
+    public string Name { get; private set; }
+    
+    /// <summary>
+    /// Имеющийся на складе запас.
+    /// </summary>
+    public int AvailableSupply { get; private set; }
+    
     private ComponentType(string typeName, int availableSupply)
     {
-        _typeName = typeName;
-        _availableSupply = availableSupply;
+        Name = typeName;
+        AvailableSupply = availableSupply;
     }
+    
+    public static ComponentType Create(string typeName, int availableSupply)
+    {
+        return new ComponentType(typeName, availableSupply);
+    }
+    
+    public ComponentType() { }
 }

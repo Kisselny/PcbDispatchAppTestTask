@@ -4,39 +4,39 @@ namespace PcbDispatchService.Domain.Logic.States;
 
 public class StateFactory : IStateFactory
 {
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
     private readonly BusinessRules _businessRules;
     private readonly QualityControlService _qualityControlService;
 
-    public StateFactory(LoggerService loggerService, BusinessRules businessRules, QualityControlService qualityControlService)
+    public StateFactory(MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules, QualityControlService qualityControlService)
     {
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
         _businessRules = businessRules;
         _qualityControlService = qualityControlService;
     }
 
-    public IBusinessProcessState CreateRegistrationState()
+    public BusinessProcessStateBase CreateRegistrationState()
     {
-        return new RegistrationState(this, _loggerService, _businessRules, _qualityControlService);
+        return new RegistrationState(this, _myCustomLoggerService, _businessRules);
     }
 
-    public IBusinessProcessState CreateComponentInstallationState()
+    public BusinessProcessStateBase CreateComponentInstallationState()
     {
-        return new ComponentInstallationState(this, _loggerService, _businessRules);
+        return new ComponentInstallationState(this, _myCustomLoggerService, _businessRules);
     }
 
-    public IBusinessProcessState CreateQualityControlState()
+    public BusinessProcessStateBase CreateQualityControlState()
     {
-        return new QualityControlState(this, _loggerService, _businessRules);
+        return new QualityControlState(this, _myCustomLoggerService, _businessRules);
     }
 
-    public IBusinessProcessState CreateRepairState()
+    public BusinessProcessStateBase CreateRepairState()
     {
-        return new RepairState(this, _loggerService, _businessRules);
+        return new RepairState(this, _myCustomLoggerService, _businessRules);
     }
 
-    public IBusinessProcessState CreatePackagingState()
+    public BusinessProcessStateBase CreatePackagingState()
     {
-        return new PackagingState(_loggerService);
+        return new PackagingState(_myCustomLoggerService);
     }
 }

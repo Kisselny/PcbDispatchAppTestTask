@@ -3,26 +3,30 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic.States;
 
-public class RepairState : IBusinessProcessState
+public class RepairState : BusinessProcessStateBase
 {
     private readonly IStateFactory _stateFactory;
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
     private readonly BusinessRules _businessRules;
 
-    public RepairState(IStateFactory stateFactory, LoggerService loggerService, BusinessRules businessRules)
+    public RepairState(IStateFactory stateFactory, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
     {
         _stateFactory = stateFactory;
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
         _businessRules = businessRules;
     }
 
-    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
+    public RepairState()
+    {
+    }
+
+    public override void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
         var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
 
         if (result == _businessRules.okMessage)
         {
-            _loggerService.LogThisSh_t("Ремонт произведён, возвращение к шагу \"Контроль качества\"");
+            _myCustomLoggerService.LogThisSh_t("Ремонт произведён, возвращение к шагу \"Контроль качества\"");
             printedCircuitBoard.SetBusinessState(_stateFactory.CreateQualityControlState());
         }
         else
@@ -31,12 +35,8 @@ public class RepairState : IBusinessProcessState
         }
     }
 
-    public BusinessProcessStatusEnum GetCurrentStatus()
+    public override BusinessProcessStatusEnum GetCurrentStatus()
     {
         return BusinessProcessStatusEnum.Repair;
-    }
-    public string GetCurrentStatusString()
-    {
-        return GetCurrentStatus().ToString();
     }
 }

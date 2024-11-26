@@ -25,9 +25,9 @@ public class PcbController : Controller
     /// <returns>Адрес с информацией о плате.</returns>
     /// <response code="201">Плата добавлена в систему.</response>
     [HttpPost]
-    public IActionResult CreateCircuitBoard(string name)
+    public async Task<IActionResult> CreateCircuitBoard(string name)
     {
-        var idOfNewBoard = _pcbService.CreateCircuitBoard(name);
+        var idOfNewBoard = await _pcbService.CreateCircuitBoard(name);
         return CreatedAtAction(nameof(GetCircuitBoardInfo), new { id = idOfNewBoard });
     }
     
@@ -36,20 +36,38 @@ public class PcbController : Controller
     /// </summary>
     /// <param name="id">Идентификатор платы.</param>
     /// <returns>DTO с описанием платы.</returns>
-    /// /// <response code="200">Плата найдена.</response>
-    /// /// <response code="404">Плата по указанному идентификатору не найдена.</response>
+    /// <response code="200">Плата найдена.</response>
+    /// <response code="404">Плата по указанному идентификатору не найдена.</response>
     [HttpGet("{id}")]
-    public ActionResult<BoardInfoDto> GetCircuitBoardInfo(int id)
+    public async Task<ActionResult<BoardInfoDto>> GetCircuitBoardInfo(int id)
     {
-        var pcb = _pcbService.GetCircuitBoardById(id);
-        if (pcb == null)
+        var pcb = await _pcbService.GetCircuitBoardById(id);
+        var result = _pcbService.FormatBoardDto(pcb);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Возвращает информацию обо всех платах, зарегистрированных в системе.
+    /// </summary>
+    /// <returns>Коллекция DTO печатных плат.</returns>
+    /// <remarks>Пагинация само собой нужна.</remarks>
+    /// <response code="200">Платы найдены.</response>
+    /// <response code="404">Платы не найдены.</response>
+    [HttpGet]
+    public async Task<ActionResult<List<BoardInfoDto>>> GetAllBoards()
+    {
+        var boards = await _pcbService.GetALlBoards();
+        if (boards.Count == 0)
         {
             return NotFound();
         }
+        var result = new List<BoardInfoDto>(boards.Count);
+        foreach (var board in boards)
+        {
+            var entry = _pcbService.FormatBoardDto(board);
+            result.Add(entry);
+        }
 
-        BoardInfoDto result = new BoardInfoDto(Id: pcb.Result.Id, Name: pcb.Result.Name,
-            ComponentNumber: pcb.Result.Components.Count, CurrentStatus: pcb.Result.GetBusinessState().ToString(),
-            QualityControlStatus: pcb.Result.QualityControlStatus.ToString());
         return Ok(result);
     }
 
@@ -61,12 +79,12 @@ public class PcbController : Controller
     /// <returns>Результат добавления компонента.</returns>
     /// /// <remarks>Добавлять компоненты можно только на этапе добавления компонентов.</remarks>
     [HttpPut("{boardId}/add-single-component")]
-    public IActionResult AddComponentToCircuitBoard(int boardId, [FromBody] BoardComponentDto dto)
+    public async Task<IActionResult> AddComponentToCircuitBoard(int boardId, [FromBody] BoardComponentDto dto)
     {
-        var pcb = _pcbService.GetCircuitBoardById(boardId);
-        if(pcb.Result != null)
+        var pcb = await _pcbService.GetCircuitBoardById(boardId);
+        if(pcb != null)
         {
-            _pcbService.AddComponent(pcb.Id, dto.ComponentTypeName, dto.Quantity);
+            await _pcbService.AddComponent(pcb.Id, dto.ComponentTypeName, dto.Quantity);
             return NoContent();
         }
         else
@@ -83,9 +101,9 @@ public class PcbController : Controller
     /// <returns>Результат добавления компонентов.</returns>
     /// <remarks>Добавлять компоненты можно только на этапе добавления компонентов.</remarks>
     [HttpPut("{boardId}/add-many-components")]
-    public IActionResult AddComponentsToCircuitBoard(int boardId, [FromBody] List<BoardComponentDto> dtos)
+    public async Task<IActionResult> AddComponentsToCircuitBoard(int boardId, [FromBody] List<BoardComponentDto> dtos)
     {
-        _pcbService.AddComponents(boardId, dtos);
+        await _pcbService.AddComponents(boardId, dtos);
         return NoContent();
     }
 
@@ -97,9 +115,9 @@ public class PcbController : Controller
     /// <returns>Результат переименования.</returns>
     /// <remarks>Переименовать плату можно только на этапе регистрации.</remarks>
     [HttpPut("{boardId}/rename/")]
-    public IActionResult RenameBoard(int boardId, [FromBody] string newName)
+    public async Task<IActionResult> RenameBoard(int boardId, [FromBody] string newName)
     {
-        _pcbService.RenameBoard(boardId, newName);
+        await _pcbService.RenameBoard(boardId, newName);
         return NoContent();
     }
     
@@ -110,9 +128,9 @@ public class PcbController : Controller
     /// <returns>Результат удаления компонентов с платы.</returns>
     /// <remarks>Удалять компоненты можно только на этапе добавления компонентов</remarks>
     [HttpPut("{boardId}/remove-components")]
-    public IActionResult RemoveAllComponentsFromBoard(int boardId)
+    public async Task<IActionResult> RemoveAllComponentsFromBoard(int boardId)
     {
-        _pcbService.RemoveAllComponentsFromBoard(boardId);
+        await _pcbService.RemoveAllComponentsFromBoard(boardId);
         return NoContent();
     }
 
@@ -124,9 +142,21 @@ public class PcbController : Controller
     /// <remarks>Удалять плату можно на любом этапе.</remarks>
     /// <response code="200">Плата удалена из системы.</response>
     [HttpDelete("{id}")]
-    public IActionResult DeleteBoard(int id)
+    public async Task<IActionResult> DeleteBoard(int id)
     {
-        _pcbService.DeleteBoard(id);
+        await _pcbService.DeleteBoard(id);
         return Ok("Плата удалена.");
+    }
+
+    /// <summary>
+    /// Переводит плату в следующее состояние процесса.
+    /// </summary>
+    /// <param name="id">Идентификатор платы.</param>
+    /// <returns>Результат перевода платы в новое состояние.</returns>
+    [HttpPut("{boardId}/next-stage/")]
+    public async Task<IActionResult> MoveToNextBusinessState(int id)
+    {
+        await _pcbService.AdvanceToNextStatus(id);
+        return Ok("Плата переведена в новое состояние.");
     }
 }

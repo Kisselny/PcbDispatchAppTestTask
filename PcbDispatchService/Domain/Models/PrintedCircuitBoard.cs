@@ -31,7 +31,7 @@ public class PrintedCircuitBoard
     /// Статус бизнес-процесса.
     /// </summary>
 
-    private IBusinessProcessState BusinessProcessState;
+    public BusinessProcessStateBase BusinessProcessStateBase { get; private set; }
     
     /// <summary>
     /// Статус контроля качества.
@@ -52,9 +52,11 @@ public class PrintedCircuitBoard
         Name = validateNameNotEmpty(name);
         Components = new List<BoardComponent>();
         _stateFactory = stateFactory;
-        BusinessProcessState = _stateFactory.CreateRegistrationState();
+        BusinessProcessStateBase = _stateFactory.CreateRegistrationState();
         QualityControlStatus = QualityControlStatus.NotSureYet;
     }
+
+    public PrintedCircuitBoard() { }
     #endregion
 
     #region Public API
@@ -64,21 +66,16 @@ public class PrintedCircuitBoard
     /// <returns>Объект, описывающий состояние безнес-процесса.</returns>
     public BusinessProcessStatusEnum GetBusinessState()
     {
-        return BusinessProcessState.GetCurrentStatus();
-    }
-
-    public string GetBusinessStateString()
-    {
-        return BusinessProcessState.GetCurrentStatusString();
+        return BusinessProcessStateBase.GetCurrentStatus();
     }
 
     /// <summary>
     /// Назначает новое состояние безнес-процесса.
     /// </summary>
-    /// <param name="businessProcessState">Объект, описывающий состояние безнес-процесса.</param>
-    public void SetBusinessState(IBusinessProcessState businessProcessState)
+    /// <param name="businessProcessStateBase">Объект, описывающий состояние безнес-процесса.</param>
+    public void SetBusinessState(BusinessProcessStateBase businessProcessStateBase)
     {
-        BusinessProcessState = businessProcessState;
+        BusinessProcessStateBase = businessProcessStateBase;
     }
     
     /// <summary>
@@ -88,7 +85,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException"></exception>
     public void RenamePcb(string newName)
     {
-        if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.Registration)
+        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.Registration)
         {
             Name = validateNameNotEmpty(newName);
         }
@@ -106,7 +103,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно добавить компонент.</exception>
     public void AddComponentToPcb(BoardComponent newComponent)
     {
-        if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {
             Components.Add(newComponent);
         }
@@ -124,7 +121,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно добавить компоненты.</exception>
     public void AddComponentsToPcb(IEnumerable<BoardComponent> newComponents)
     {
-        if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {
             Components.AddRange(newComponents);
         }
@@ -141,7 +138,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно удалить компоненты.</exception>
     public void RemoveAllComponentsFromBoard()
     {
-        if (BusinessProcessState.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {
             Components.Clear();
         }

@@ -3,27 +3,29 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic.States;
 
-public class RegistrationState : IBusinessProcessState
+public class RegistrationState : BusinessProcessStateBase
 {
     private readonly IStateFactory _stateFactory;
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
     private readonly BusinessRules _businessRules;
-    private readonly QualityControlService _qualityControlService;
 
-    public RegistrationState(IStateFactory stateFactory, LoggerService loggerService, BusinessRules businessRules, QualityControlService qualityControlService)
+    public RegistrationState(IStateFactory stateFactory, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
     {
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
         _businessRules = businessRules;
-        _qualityControlService = qualityControlService;
         _stateFactory = stateFactory;
     }
 
-    public void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
+    public RegistrationState()
+    {
+    }
+
+    public override void AdvanceToNextState(PrintedCircuitBoard printedCircuitBoard)
     {
         var result = _businessRules.CheckIfContinuationIsPossible(printedCircuitBoard);
         if(result == _businessRules.okMessage)
         {
-            _loggerService.LogThisSh_t("Регистрация пройдена, переход на этап добавления компонентов.");
+            _myCustomLoggerService.LogThisSh_t("Регистрация пройдена, переход на этап добавления компонентов.");
             printedCircuitBoard.SetBusinessState(_stateFactory.CreateComponentInstallationState());
         }
         else
@@ -32,12 +34,8 @@ public class RegistrationState : IBusinessProcessState
         }
     }
 
-    public BusinessProcessStatusEnum GetCurrentStatus()
+    public override BusinessProcessStatusEnum GetCurrentStatus()
     {
         return BusinessProcessStatusEnum.Registration;
-    }
-    public string GetCurrentStatusString()
-    {
-        return GetCurrentStatus().ToString();
     }
 }

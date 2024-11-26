@@ -6,12 +6,12 @@ namespace PcbDispatchService.Services;
 public class PcbFactory
 {
     private readonly IStateFactory _stateFactory;
-    private readonly LoggerService _loggerService;
+    private readonly MyCustomLoggerService _myCustomLoggerService;
 
-    public PcbFactory(IStateFactory stateFactory, LoggerService loggerService)
+    public PcbFactory(IStateFactory stateFactory, MyCustomLoggerService myCustomLoggerService)
     {
         _stateFactory = stateFactory;
-        _loggerService = loggerService;
+        _myCustomLoggerService = myCustomLoggerService;
     }
 
     public PrintedCircuitBoard CreateCircuitBoard(string name)
@@ -33,7 +33,7 @@ public class PcbFactory
                 "Невозможно добавить компонент к плате, т.к. недостаточно компонентов указанного типа на складе.");
         }
 
-        _loggerService.LogThisSh_t($"К плате {pcb.Name} добавлен новый компонент");
+        _myCustomLoggerService.LogThisSh_t($"К плате {pcb.Name} добавлен новый компонент");
         throw new ApplicationException("Невозможно добавить компонент к плате, т.к. тип компонента не найден.");
     }
 
@@ -62,6 +62,6 @@ public class PcbFactory
                 throw new ApplicationException($"Компонент типа {boardComponent.ComponentType.Name} не найден в базе.");
             }
         }
-        _loggerService.LogThisSh_t($"К плате {pcb.Name} добавлены новые компоненты");
+        _myCustomLoggerService.LogThisSh_t($"К плате {pcb.Name} добавлены новые компоненты");
     }
 }

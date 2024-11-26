@@ -1,6 +1,6 @@
 ﻿namespace PcbDispatchService.Services;
 
-public class LoggerService
+public class MyCustomLoggerService
 {
     public void LogThisSh_t(string message)
     {

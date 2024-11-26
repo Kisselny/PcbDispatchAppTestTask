@@ -29,9 +29,10 @@ public class Program
 
         builder.Services.AddControllers();
 
-        builder.Services.AddSingleton<LoggerService>();
+        builder.Services.AddScoped<MyCustomLoggerService>();
         builder.Services.AddScoped<QualityControlService>();
         builder.Services.AddScoped<PcbFactory>();
+        builder.Services.AddScoped<PcbService>();
         builder.Services.AddScoped<BusinessRules>();
         builder.Services.AddScoped<IStateFactory, StateFactory>();
         
@@ -40,6 +41,7 @@ public class Program
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
         builder.Services.AddScoped<IComponentTypesRepository, ComponentTypesRepository>();
+        
         builder.Services.AddScoped<IPcbRepository, PcbRepository>();
 
 
@@ -56,6 +58,8 @@ public class Program
 
         app.UseAuthorization();
 
+        app.MapControllers();
+        
         app.Run();
     }
 }
