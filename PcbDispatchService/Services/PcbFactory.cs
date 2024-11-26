@@ -6,12 +6,10 @@ namespace PcbDispatchService.Services;
 public class PcbFactory
 {
     private readonly IStateFactory _stateFactory;
-    private readonly MyCustomLoggerService _myCustomLoggerService;
 
-    public PcbFactory(IStateFactory stateFactory, MyCustomLoggerService myCustomLoggerService)
+    public PcbFactory(IStateFactory stateFactory)
     {
         _stateFactory = stateFactory;
-        _myCustomLoggerService = myCustomLoggerService;
     }
 
     public PrintedCircuitBoard CreateCircuitBoard(string name)

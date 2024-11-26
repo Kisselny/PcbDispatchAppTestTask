@@ -31,7 +31,7 @@ public class PrintedCircuitBoard
     /// Статус бизнес-процесса.
     /// </summary>
 
-    public BusinessProcessStateBase BusinessProcessStateBase { get; private set; }
+    public BusinessProcessStateBase BusinessProcessStateAbstract { get; private set; }
     
     /// <summary>
     /// Статус контроля качества.
@@ -52,7 +52,7 @@ public class PrintedCircuitBoard
         Name = validateNameNotEmpty(name);
         Components = new List<BoardComponent>();
         _stateFactory = stateFactory;
-        BusinessProcessStateBase = _stateFactory.CreateRegistrationState();
+        BusinessProcessStateAbstract = _stateFactory.CreateRegistrationState();
         QualityControlStatus = QualityControlStatus.NotSureYet;
     }
 
@@ -66,7 +66,7 @@ public class PrintedCircuitBoard
     /// <returns>Объект, описывающий состояние безнес-процесса.</returns>
     public BusinessProcessStatusEnum GetBusinessState()
     {
-        return BusinessProcessStateBase.GetCurrentStatus();
+        return BusinessProcessStateAbstract.GetCurrentStatus();
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ public class PrintedCircuitBoard
     /// <param name="businessProcessStateBase">Объект, описывающий состояние безнес-процесса.</param>
     public void SetBusinessState(BusinessProcessStateBase businessProcessStateBase)
     {
-        BusinessProcessStateBase = businessProcessStateBase;
+        BusinessProcessStateAbstract = businessProcessStateBase;
     }
     
     /// <summary>
@@ -85,7 +85,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException"></exception>
     public void RenamePcb(string newName)
     {
-        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.Registration)
+        if (BusinessProcessStateAbstract.GetCurrentStatus() is BusinessProcessStatusEnum.Registration)
         {
             Name = validateNameNotEmpty(newName);
         }
@@ -103,9 +103,17 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно добавить компонент.</exception>
     public void AddComponentToPcb(BoardComponent newComponent)
     {
-        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStateAbstract.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {
-            Components.Add(newComponent);
+            var existing = Components.FirstOrDefault(i => i.ComponentType == newComponent.ComponentType); 
+            if (existing is not null)
+            {
+                existing.Quantity = newComponent.Quantity;
+            }
+            else
+            {
+                Components.Add(newComponent);
+            }
         }
         else
         {
@@ -120,7 +128,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно удалить компоненты.</exception>
     public void RemoveAllComponentsFromBoard()
     {
-        if (BusinessProcessStateBase.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStateAbstract.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
         {
             Components.Clear();
         }

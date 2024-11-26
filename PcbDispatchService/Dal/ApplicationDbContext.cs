@@ -15,8 +15,16 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        
+        
+
+        
         modelBuilder.Entity<PrintedCircuitBoard>().HasKey(pcb => pcb.Id);
+        
+        
         modelBuilder.Entity<BoardComponent>().HasKey(bc => bc.Id);
+        
+        
         modelBuilder.Entity<ComponentType>().HasKey(ct => ct.Name);
 
         modelBuilder.Entity<BusinessProcessStateBase>()

@@ -10,12 +10,12 @@ public class BoardComponent
     /// <summary>
     /// Тип компонента.
     /// </summary>
-    public ComponentType ComponentType { get; private set; }
+    public string ComponentType { get; private set; }
     
     /// <summary>
     /// Количество компонентов, добавляемых к плате.
     /// </summary>
-    public int Quantity { get; private set; }
+    public int Quantity { get; set; }
 
 
     /// <summary>
@@ -25,7 +25,7 @@ public class BoardComponent
     /// <param name="quantity">Количество.</param>
     public BoardComponent(ComponentType type, int quantity)
     {
-        ComponentType = type;
+        ComponentType = type.Name;
         Quantity = quantity;
     }
     

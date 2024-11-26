@@ -30,7 +30,7 @@ public class PcbRepository : IPcbRepository
         var pcb = await _context.PrintedCircuitBoards
             .Where(i => i.Id == id)
             .Include(i => i.Components)
-            .Include(i => i.BusinessProcessStateBase)
+            .Include(i => i.BusinessProcessStateAbstract)
             .FirstOrDefaultAsync();
         if(pcb is not null)
         {
@@ -46,7 +46,7 @@ public class PcbRepository : IPcbRepository
     {
         var allPcbs = await _context.PrintedCircuitBoards
             .Include(i => i.Components)
-            .Include(i => i.BusinessProcessStateBase)
+            .Include(i => i.BusinessProcessStateAbstract)
             .ToListAsync();
         if (allPcbs.Count > 0)
         {
@@ -80,7 +80,10 @@ public class PcbRepository : IPcbRepository
 
     public async Task RenameBoard(int id, string newName)
     {
-        var pcb = await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id).FirstOrDefaultAsync();
+        var pcb = await _context.PrintedCircuitBoards
+            .Where(i => i.Id == id)
+            .Include(i => i.BusinessProcessStateAbstract)
+            .FirstOrDefaultAsync();
         if (pcb != null)
         {
             pcb.RenamePcb(newName);
@@ -110,11 +113,13 @@ public class PcbRepository : IPcbRepository
 
     public async Task UpdateBoardStateById(int id)
     {
-        var pcb = await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id)
-            .Include(printedCircuitBoard => printedCircuitBoard.BusinessProcessStateBase).FirstOrDefaultAsync();
+        var pcb = await _context.PrintedCircuitBoards
+            .Where(i => i.Id == id)
+            .Include(printedCircuitBoard => printedCircuitBoard.BusinessProcessStateAbstract)
+            .FirstOrDefaultAsync();
         if (pcb != null)
         {
-            pcb.BusinessProcessStateBase.AdvanceToNextState(pcb);
+            pcb.BusinessProcessStateAbstract.AdvanceToNextState(pcb);
             _context.PrintedCircuitBoards.Update(pcb);
             await _context.SaveChangesAsync();
         }
@@ -129,11 +134,28 @@ public class PcbRepository : IPcbRepository
         var pcb = await _context.PrintedCircuitBoards
             .Where(i => i.Id == boardId)
             .Include(i => i.Components)
-            .Include(i => i.BusinessProcessStateBase)
+            .Include(i => i.BusinessProcessStateAbstract)
             .FirstOrDefaultAsync();
         if(pcb is not null)
         {
-            pcb.Components.Add(boardComponent);
+            if (pcb.Components.Count > 0)
+            {
+                var existingComponent = pcb.Components
+                    .FirstOrDefault(i => i.ComponentType == boardComponent.ComponentType);
+                if (existingComponent is not null)
+                {
+                    existingComponent.Quantity += boardComponent.Quantity;
+                    pcb.AddComponentToPcb(existingComponent);
+                }
+                else
+                {
+                    pcb.AddComponentToPcb(boardComponent);
+                }
+            }
+            else
+            {
+                pcb.AddComponentToPcb(boardComponent);
+            }
             _context.PrintedCircuitBoards.Update(pcb);
             await _context.SaveChangesAsync();
         }

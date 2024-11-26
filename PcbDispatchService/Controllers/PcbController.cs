@@ -39,11 +39,11 @@ public class PcbController : Controller
     /// <response code="200">Плата найдена.</response>
     /// <response code="404">Плата по указанному идентификатору не найдена.</response>
     [HttpGet("{id}")]
-    public async Task<ActionResult<BoardInfoDto>> GetCircuitBoardInfo(int id)
+    public async Task<ActionResult<PrintedCircuitBoard>> GetCircuitBoardInfo(int id)
     {
         var pcb = await _pcbService.GetCircuitBoardById(id);
         var result = _pcbService.FormatBoardDto(pcb);
-        return Ok(result);
+        return Ok(pcb);
     }
 
     /// <summary>
