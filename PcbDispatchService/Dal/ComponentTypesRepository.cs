@@ -47,8 +47,18 @@ public class ComponentTypesRepository : IComponentTypesRepository
     /// <inheritdoc />
     public async Task IncreaseComponentSupplyByValue(List<BoardComponent> boardComponents)
     {
+        /*var storageComponents2 = await _context.ComponentTypes
+            .Where(i => boardComponents.Any(bc => bc.ComponentType == i.Name))
+            .ToListAsync();*/
+        
+        
+        var boardComponentTypes = boardComponents.Select(bc => bc.ComponentType).ToList();
         var storageComponents = await _context.ComponentTypes
-            .Where(i => boardComponents.Any(bc => bc.ComponentType == i.Name)).ToListAsync();
+            .Where(i => boardComponentTypes.Contains(i.Name))
+            .ToListAsync();
+
+        
+        
         if (storageComponents is null)
         {
             throw new ApplicationException($"storageComponents is null");

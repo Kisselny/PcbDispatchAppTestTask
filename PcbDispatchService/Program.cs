@@ -34,7 +34,6 @@ public class Program
         builder.Services.AddScoped<PcbFactory>();
         builder.Services.AddScoped<PcbService>();
         builder.Services.AddScoped<BusinessRules>();
-        builder.Services.AddScoped<IStateFactory, StateFactory>();
         
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 

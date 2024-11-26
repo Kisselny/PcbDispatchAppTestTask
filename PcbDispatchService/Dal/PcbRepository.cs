@@ -12,7 +12,7 @@ public interface IPcbRepository
     Task DeletePcbById(int id);
     Task RenameBoard(int id, string newName);
     Task RemoveComponentsFromBoard(int id);
-    Task UpdateBoardStateById(int id);
+    Task UpdateBoardState(PrintedCircuitBoard newStatePcb);
     Task AddComponentToBoard(int boardId, BoardComponent boardComponent);
 }
 
@@ -30,7 +30,6 @@ public class PcbRepository : IPcbRepository
         var pcb = await _context.PrintedCircuitBoards
             .Where(i => i.Id == id)
             .Include(i => i.Components)
-            .Include(i => i.BusinessProcessStateAbstract)
             .FirstOrDefaultAsync();
         if(pcb is not null)
         {
@@ -46,7 +45,6 @@ public class PcbRepository : IPcbRepository
     {
         var allPcbs = await _context.PrintedCircuitBoards
             .Include(i => i.Components)
-            .Include(i => i.BusinessProcessStateAbstract)
             .ToListAsync();
         if (allPcbs.Count > 0)
         {
@@ -82,7 +80,6 @@ public class PcbRepository : IPcbRepository
     {
         var pcb = await _context.PrintedCircuitBoards
             .Where(i => i.Id == id)
-            .Include(i => i.BusinessProcessStateAbstract)
             .FirstOrDefaultAsync();
         if (pcb != null)
         {
@@ -111,21 +108,20 @@ public class PcbRepository : IPcbRepository
         }
     }
 
-    public async Task UpdateBoardStateById(int id)
+    public async Task UpdateBoardState(PrintedCircuitBoard newStatePcb)
     {
         var pcb = await _context.PrintedCircuitBoards
-            .Where(i => i.Id == id)
-            .Include(printedCircuitBoard => printedCircuitBoard.BusinessProcessStateAbstract)
+            .Where(i => i.Id == newStatePcb.Id)
             .FirstOrDefaultAsync();
         if (pcb != null)
         {
-            pcb.BusinessProcessStateAbstract.AdvanceToNextState(pcb);
+            pcb.SetBusinessEnum(newStatePcb.BusinessProcessStatus);
             _context.PrintedCircuitBoards.Update(pcb);
             await _context.SaveChangesAsync();
         }
         else
         {
-            throw new ApplicationException($"Не удалось изменить статус, плата {id} не найдена.");
+            throw new ApplicationException($"Не удалось изменить статус, плата {newStatePcb.Id} не найдена.");
         }
     }
 
@@ -134,7 +130,6 @@ public class PcbRepository : IPcbRepository
         var pcb = await _context.PrintedCircuitBoards
             .Where(i => i.Id == boardId)
             .Include(i => i.Components)
-            .Include(i => i.BusinessProcessStateAbstract)
             .FirstOrDefaultAsync();
         if(pcb is not null)
         {

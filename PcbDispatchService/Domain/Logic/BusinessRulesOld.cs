@@ -5,7 +5,7 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic;
 
-public class BusinessRules : IBusinessRules
+public class BusinessRulesOld
 {
     private readonly QualityControlService _qualityControlService;
     public readonly string okMessage = "Ok";
@@ -16,7 +16,7 @@ public class BusinessRules : IBusinessRules
     private readonly string notOkMessageDefective = "Плата не прошла контроль качества, т.к. признана бракованной.";
 
     
-    public BusinessRules(QualityControlService qualityControlService)
+    public BusinessRulesOld(QualityControlService qualityControlService)
     {
         _qualityControlService = qualityControlService;
     }
@@ -27,8 +27,9 @@ public class BusinessRules : IBusinessRules
     /// <param name="printedCircuitBoard">Экземпляр платы.</param>
     /// <returns>Сообщение-статус проверки бизнес-правил.</returns>
     /// <exception cref="InvalidOperationException">Невозможно осуществить проверку.</exception>
-    public BusinessProcessStatusEnum CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard)
+    public string CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard)
     {
+        //switch (printedCircuitBoard.GetBusinessStateClass())
         switch (printedCircuitBoard.BusinessProcessStatus)
         {
             case BusinessProcessStatusEnum.Registration:
@@ -37,17 +38,14 @@ public class BusinessRules : IBusinessRules
                  но какая-то логика должна же быть))*/
                 if (printedCircuitBoard.Name != string.Empty)
                 {
-                    return BusinessProcessStatusEnum.ComponentInstallation;
+                    return okMessage;
                 }
                 else
-                    throw new BusinessException(notOkMessageStart + notOkMessageRegistration);
+                    return notOkMessageStart + notOkMessageRegistration;
             }
             case BusinessProcessStatusEnum.ComponentInstallation:
             {
-                if (printedCircuitBoard.Components.Count != 0)
-                    return BusinessProcessStatusEnum.QualityControl;
-                else
-                    throw new BusinessException(notOkMessageStart + notOkMessageQuality);
+                return printedCircuitBoard.Components.Count != 0 ? okMessage : notOkMessageStart + notOkMessageComponents;
             }
             case BusinessProcessStatusEnum.QualityControl:
             {
@@ -55,12 +53,11 @@ public class BusinessRules : IBusinessRules
 
                 if (result == QualityControlStatus.QualityIsOk)
                 {
-                    printedCircuitBoard.QualityControlStatus = QualityControlStatus.QualityIsOk;
-                    return BusinessProcessStatusEnum.Packaging;
+                    return okMessage;
                 }
                 else
                 {
-                    return BusinessProcessStatusEnum.Repair;
+                    return notOkMessageStart + notOkMessageQuality;
                 }
             }
             case BusinessProcessStatusEnum.Repair:
@@ -69,19 +66,19 @@ public class BusinessRules : IBusinessRules
                 
                 if (printedCircuitBoard.QualityControlStatus == QualityControlStatus.QualityIsOk)
                 {
-                    return BusinessProcessStatusEnum.QualityControl;
+                    return okMessage;
                 }
                 else
                 {
                     printedCircuitBoard.QualityControlStatus = QualityControlStatus.Defective;
-                    throw new BusinessException(notOkMessageStart + notOkMessageDefective);
+                    return notOkMessageStart + notOkMessageDefective;
                 }
             }
             case BusinessProcessStatusEnum.Packaging:
             {
-                return BusinessProcessStatusEnum.Packaging;
+                break;
             }
         }
-        throw new InvalidOperationException("Сюда мы не должны дойти.");
+        throw new InvalidOperationException();
     }
 }

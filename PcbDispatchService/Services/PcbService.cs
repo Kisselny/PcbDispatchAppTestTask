@@ -1,5 +1,6 @@
 ﻿using PcbDispatchService.Controllers.Dto;
 using PcbDispatchService.Dal;
+using PcbDispatchService.Domain.Logic;
 using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Services;
@@ -10,13 +11,15 @@ public class PcbService
     private readonly IPcbRepository _pcbRepository;
     private readonly IComponentTypesRepository _componentTypesRepository;
     private readonly MyCustomLoggerService _myCustomLoggerService;
+    private readonly BusinessRules _businessRules;
 
-    public PcbService(PcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, MyCustomLoggerService myCustomLoggerService)
+    public PcbService(PcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
     {
         _pcbFactory = pcbFactory;
         _pcbRepository = pcbRepository;
         _componentTypesRepository = componentTypesRepository;
         _myCustomLoggerService = myCustomLoggerService;
+        _businessRules = businessRules;
     }
 
     public async Task<int> CreateCircuitBoard(string name)
@@ -80,8 +83,8 @@ public class PcbService
         if(boardToRemoveComponentsFrom is not null)
         {
             var componentsToReturnToStorage = boardToRemoveComponentsFrom.Components;
-            await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
             await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
+            await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
             _myCustomLoggerService.LogThisSh_t($"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
         }
     }
@@ -92,17 +95,30 @@ public class PcbService
             _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
     }
 
-    public async Task AdvanceToNextStatus(int boardId)
+    public async Task<string> AdvanceToNextStatus(int boardId)
     {
-        await _pcbRepository.UpdateBoardStateById(boardId);
-        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние.");
+        var pcb = await _pcbRepository.GetPcbById(boardId);
+        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+        if (pcb.BusinessProcessStatus != result)
+        {
+            pcb.SetBusinessEnum(result);
+            await _pcbRepository.UpdateBoardState(pcb);
+            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
+            return $"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}.";
+        }
+        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) прошла весь процесс.");
+        return $"Плата (id = {boardId}) уже прошла весь процесс.";
     }
 
-    public BoardInfoDto FormatBoardDto(PrintedCircuitBoard pcb)
+    public BoardInfoDto2 FormatBoardDto(PrintedCircuitBoard pcb)
     {
         BoardInfoDto result = new BoardInfoDto(Id: pcb.Id, Name: pcb.Name,
-            ComponentNumber: pcb.Components.Count, CurrentStatus: pcb.GetBusinessState().ToString(),
+            ComponentNumber: pcb.Components.Count, CurrentStatus: pcb.BusinessProcessStatus.ToString(),
             QualityControlStatus: pcb.QualityControlStatus.ToString());
-        return result;
+        
+        BoardInfoDto2 result2 = new BoardInfoDto2(Id: pcb.Id, Name: pcb.Name,
+            ComponentNumber: pcb.Components.Count, pcb.Components, CurrentStatus: pcb.BusinessProcessStatus.ToString(),
+            QualityControlStatus: pcb.QualityControlStatus.ToString());
+        return result2;
     }
 }

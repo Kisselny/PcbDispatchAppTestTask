@@ -1,8 +1,9 @@
-﻿using PcbDispatchService.Domain.Models;
+﻿using PcbDispatchService.Domain.Logic.States;
+using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Domain.Logic;
 
 public interface IBusinessRules
 {
-    string CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard);
+    BusinessProcessStatusEnum CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard);
 }

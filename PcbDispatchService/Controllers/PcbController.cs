@@ -28,7 +28,8 @@ public class PcbController : Controller
     public async Task<IActionResult> CreateCircuitBoard(string name)
     {
         var idOfNewBoard = await _pcbService.CreateCircuitBoard(name);
-        return CreatedAtAction(nameof(GetCircuitBoardInfo), new { id = idOfNewBoard });
+        //return Ok($"Id новой платы: {idOfNewBoard}");
+        return Ok(CreatedAtAction(nameof(GetCircuitBoardInfo), new { id = idOfNewBoard }));
     }
     
     /// <summary>
@@ -43,7 +44,7 @@ public class PcbController : Controller
     {
         var pcb = await _pcbService.GetCircuitBoardById(id);
         var result = _pcbService.FormatBoardDto(pcb);
-        return Ok(pcb);
+        return Ok(result);
     }
 
     /// <summary>
@@ -61,7 +62,7 @@ public class PcbController : Controller
         {
             return NotFound();
         }
-        var result = new List<BoardInfoDto>(boards.Count);
+        var result = new List<BoardInfoDto2>(boards.Count);
         foreach (var board in boards)
         {
             var entry = _pcbService.FormatBoardDto(board);
@@ -134,7 +135,7 @@ public class PcbController : Controller
     [HttpPut("{boardId}/next-stage/")]
     public async Task<IActionResult> MoveToNextBusinessState(int boardId)
     {
-        await _pcbService.AdvanceToNextStatus(boardId);
-        return Ok("Плата переведена в новое состояние.");
+        string result = await _pcbService.AdvanceToNextStatus(boardId);
+        return Ok(result);
     }
 }

@@ -8,7 +8,6 @@ namespace PcbDispatchService.Domain.Models;
 /// </summary>
 public class PrintedCircuitBoard
 {
-    private readonly IStateFactory _stateFactory;
 
     #region Properties
     /// <summary>
@@ -31,7 +30,8 @@ public class PrintedCircuitBoard
     /// Статус бизнес-процесса.
     /// </summary>
 
-    public BusinessProcessStateBase BusinessProcessStateAbstract { get; private set; }
+    
+    public BusinessProcessStatusEnum BusinessProcessStatus { get; private set; }
     
     /// <summary>
     /// Статус контроля качества.
@@ -46,13 +46,12 @@ public class PrintedCircuitBoard
     /// </summary>
     /// <param name="name">Название печатной платы.</param>
     /// <param name="stateFactory">Фабрика состояний.</param>
-    public PrintedCircuitBoard(string name, IStateFactory stateFactory)
+    public PrintedCircuitBoard(string name)
     {
         Id = generateId();
         Name = validateNameNotEmpty(name);
         Components = new List<BoardComponent>();
-        _stateFactory = stateFactory;
-        BusinessProcessStateAbstract = _stateFactory.CreateRegistrationState();
+        BusinessProcessStatus = BusinessProcessStatusEnum.Registration;
         QualityControlStatus = QualityControlStatus.NotSureYet;
     }
 
@@ -60,22 +59,10 @@ public class PrintedCircuitBoard
     #endregion
 
     #region Public API
-    /// <summary>
-    /// Возвращает текущее состояние бизнес-процесса.
-    /// </summary>
-    /// <returns>Объект, описывающий состояние безнес-процесса.</returns>
-    public BusinessProcessStatusEnum GetBusinessState()
-    {
-        return BusinessProcessStateAbstract.GetCurrentStatus();
-    }
 
-    /// <summary>
-    /// Назначает новое состояние безнес-процесса.
-    /// </summary>
-    /// <param name="businessProcessStateBase">Объект, описывающий состояние безнес-процесса.</param>
-    public void SetBusinessState(BusinessProcessStateBase businessProcessStateBase)
+    public void SetBusinessEnum(BusinessProcessStatusEnum newBusinessProcessStatusEnum)
     {
-        BusinessProcessStateAbstract = businessProcessStateBase;
+        BusinessProcessStatus = newBusinessProcessStatusEnum;
     }
     
     /// <summary>
@@ -85,7 +72,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException"></exception>
     public void RenamePcb(string newName)
     {
-        if (BusinessProcessStateAbstract.GetCurrentStatus() is BusinessProcessStatusEnum.Registration)
+        if (BusinessProcessStatus is BusinessProcessStatusEnum.Registration)
         {
             Name = validateNameNotEmpty(newName);
         }
@@ -103,7 +90,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно добавить компонент.</exception>
     public void AddComponentToPcb(BoardComponent newComponent)
     {
-        if (BusinessProcessStateAbstract.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStatus is BusinessProcessStatusEnum.ComponentInstallation)
         {
             var existing = Components.FirstOrDefault(i => i.ComponentType == newComponent.ComponentType); 
             if (existing is not null)
@@ -128,7 +115,7 @@ public class PrintedCircuitBoard
     /// <exception cref="BusinessException">Невозможно удалить компоненты.</exception>
     public void RemoveAllComponentsFromBoard()
     {
-        if (BusinessProcessStateAbstract.GetCurrentStatus() is BusinessProcessStatusEnum.ComponentInstallation)
+        if (BusinessProcessStatus is BusinessProcessStatusEnum.ComponentInstallation)
         {
             Components.Clear();
         }

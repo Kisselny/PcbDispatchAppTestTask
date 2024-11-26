@@ -27,14 +27,6 @@ public class ApplicationDbContext : DbContext
         
         modelBuilder.Entity<ComponentType>().HasKey(ct => ct.Name);
 
-        modelBuilder.Entity<BusinessProcessStateBase>()
-            .HasDiscriminator<string>("BusinessProcessType")
-            .HasValue<RegistrationState>("Registration")
-            .HasValue<ComponentInstallationState>("ComponentInstallation")
-            .HasValue<QualityControlState>("QualityControlState")
-            .HasValue<RepairState>("RepairState")
-            .HasValue<PackagingState>("PackagingState");
-
         modelBuilder.Entity<ComponentType>().HasData(
             ComponentType.Create("A0-B0", 28),
             ComponentType.Create("A0-B1", 66),
