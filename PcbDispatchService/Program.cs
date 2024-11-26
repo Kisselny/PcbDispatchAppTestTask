@@ -29,18 +29,17 @@ public class Program
 
         builder.Services.AddControllers();
 
-        builder.Services.AddScoped<MyCustomLoggerService>();
-        builder.Services.AddScoped<QualityControlService>();
-        builder.Services.AddScoped<PcbFactory>();
-        builder.Services.AddScoped<PcbService>();
-        builder.Services.AddScoped<BusinessRules>();
+        builder.Services.AddScoped<IMyCustomLoggerService, MyCustomLoggerService>();
+        builder.Services.AddScoped<IQualityControlService, QualityControlService>();
+        builder.Services.AddScoped<IPcbFactory, PcbFactory>();
+        builder.Services.AddScoped<IPcbService, PcbService>();
+        builder.Services.AddScoped<IBusinessRules, BusinessRules>();
         
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
         builder.Services.AddScoped<IComponentTypesRepository, ComponentTypesRepository>();
-        
         builder.Services.AddScoped<IPcbRepository, PcbRepository>();
 
 

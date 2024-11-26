@@ -2,10 +2,21 @@
 
 namespace PcbDispatchService.Dal;
 
+/// <summary>
+/// Репозиторий компонентов для плат.
+/// </summary>
 public interface IComponentTypesRepository
 {
+    /// <summary>
+    /// Найти компонент по имени.
+    /// </summary>
+    /// <param name="name">Название компонента.</param>
+    /// <returns>Компонент.</returns>
     Task<ComponentType?> GetComponentTypeByName(string name);
-    Task<List<ComponentType>> GetComponentTypesByNames(List<string> names);
+    /// <summary>
+    /// Получить все компоненты на складе.
+    /// </summary>
+    /// <returns></returns>
     Task<List<ComponentType>> GetAllComponents();
     
     /// <summary>
@@ -16,10 +27,12 @@ public interface IComponentTypesRepository
     /// <remarks>Используется для возвращения компонентов на склад при очистке компонентов с платы.</remarks>
     Task IncreaseComponentSupplyByValue(List<BoardComponent> boardComponents);
     
+
     /// <summary>
-    /// Уменьшает количество указанного компонента на складе.
+    /// Уменьшить количество компонента ан складе.
     /// </summary>
-    /// <param name="boardComponent">Компонент и количество, на которое уменьшить.</param>
+    /// <param name="componentTypeName">Название типа компонента.</param>
+    /// <param name="value">Количество</param>
     /// <returns></returns>
     Task DecreaseComponentSupplyByValue(string componentTypeName, int value);
 }

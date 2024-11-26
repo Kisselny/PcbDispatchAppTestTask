@@ -4,27 +4,21 @@ using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Dal;
 
-public interface IPcbRepository
-{
-    Task<PrintedCircuitBoard?> GetPcbById(int id);
-    Task<List<PrintedCircuitBoard>> GetAllPcbs();
-    Task AddNewBoard(PrintedCircuitBoard pcb);
-    Task DeletePcbById(int id);
-    Task RenameBoard(int id, string newName);
-    Task RemoveComponentsFromBoard(int id);
-    Task UpdateBoardState(PrintedCircuitBoard newStatePcb);
-    Task AddComponentToBoard(int boardId, BoardComponent boardComponent);
-}
-
+/// <inheritdoc />
 public class PcbRepository : IPcbRepository
 {
     private readonly ApplicationDbContext _context;
 
+    /// <summary>
+    /// Создает экземпляр репозитория.
+    /// </summary>
+    /// <param name="context">Контекст БД.</param>
     public PcbRepository(ApplicationDbContext context)
     {
         _context = context;
     }
-    
+
+    /// <inheritdoc />
     public async Task<PrintedCircuitBoard?> GetPcbById(int id)
     {
         var pcb = await _context.PrintedCircuitBoards
@@ -40,7 +34,8 @@ public class PcbRepository : IPcbRepository
             throw new ApplicationException($"Плата {id} не найдена.");
         }
     }
-    
+
+    /// <inheritdoc />
     public async Task<List<PrintedCircuitBoard>> GetAllPcbs()
     {
         var allPcbs = await _context.PrintedCircuitBoards
@@ -56,12 +51,14 @@ public class PcbRepository : IPcbRepository
         }
     }
 
+    /// <inheritdoc />
     public async Task AddNewBoard(PrintedCircuitBoard pcb)
     {
         await _context.AddAsync(pcb);
         await _context.SaveChangesAsync();
     }
-    
+
+    /// <inheritdoc />
     public async Task DeletePcbById(int id)
     {
         var pcb = await _context.PrintedCircuitBoards
@@ -84,6 +81,7 @@ public class PcbRepository : IPcbRepository
         }
     }
 
+    /// <inheritdoc />
     public async Task RenameBoard(int id, string newName)
     {
         var pcb = await _context.PrintedCircuitBoards
@@ -101,6 +99,7 @@ public class PcbRepository : IPcbRepository
         }
     }
 
+    /// <inheritdoc />
     public async Task RemoveComponentsFromBoard(int id)
     {
         var pcb = await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id).FirstOrDefaultAsync();
@@ -116,6 +115,7 @@ public class PcbRepository : IPcbRepository
         }
     }
 
+    /// <inheritdoc />
     public async Task UpdateBoardState(PrintedCircuitBoard newStatePcb)
     {
         var pcb = await _context.PrintedCircuitBoards
@@ -133,6 +133,7 @@ public class PcbRepository : IPcbRepository
         }
     }
 
+    /// <inheritdoc />
     public async Task AddComponentToBoard(int boardId, BoardComponent boardComponent)
     {
         var pcb = await _context.PrintedCircuitBoards

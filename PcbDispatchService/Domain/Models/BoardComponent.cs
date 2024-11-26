@@ -1,15 +1,21 @@
-﻿namespace PcbDispatchService.Domain.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PcbDispatchService.Domain.Models;
 
 /// <summary>
 /// Представляет компонент на плате.
 /// </summary>
 public class BoardComponent
 {
+    /// <summary>
+    /// Идентификатор компонента, помещенного на плату.
+    /// </summary>
     public int Id { get; set; }
 
     /// <summary>
     /// Тип компонента.
     /// </summary>
+    [MaxLength(120)]
     public string ComponentType { get; private set; }
     
     /// <summary>

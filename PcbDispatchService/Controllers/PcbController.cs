@@ -7,12 +7,19 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace PcbDispatchService.Controllers;
 
+/// <summary>
+/// Контроллер печатных плат.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class PcbController : Controller
 {
     private readonly PcbService _pcbService;
 
+    /// <summary>
+    /// Создает контроллер печатных плат.
+    /// </summary>
+    /// <param name="pcbService">Сервис печатных плат.</param>
     public PcbController(PcbService pcbService)
     {
         _pcbService = pcbService;
@@ -57,7 +64,7 @@ public class PcbController : Controller
     [HttpGet]
     public async Task<ActionResult<List<BoardInfoDto>>> GetAllBoards()
     {
-        var boards = await _pcbService.GetALlBoards();
+        var boards = await _pcbService.GetAllBoards();
         if (boards.Count == 0)
         {
             return NotFound();

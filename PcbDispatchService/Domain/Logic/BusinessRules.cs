@@ -5,10 +5,10 @@ using PcbDispatchService.Services;
 
 namespace PcbDispatchService.Domain.Logic;
 
+/// <inheritdoc />
 public class BusinessRules : IBusinessRules
 {
     private readonly QualityControlService _qualityControlService;
-    public readonly string okMessage = "Ok";
     private readonly string notOkMessageStart = "Невозможно продвинуться по бизнес-процессу: ";
     private readonly string notOkMessageRegistration = "Имя платы не должно быть пустым.";
     private readonly string notOkMessageComponents = "К плате необходимо добавить компоненты";
@@ -16,17 +16,17 @@ public class BusinessRules : IBusinessRules
     private readonly string notOkMessageDefective = "Плата не прошла контроль качества, т.к. признана бракованной.";
 
     
+    /// <summary>
+    /// Создает новый экземпляр сервиса бизнес-правил.
+    /// </summary>
+    /// <param name="qualityControlService">Сервис контроля качества.</param>
     public BusinessRules(QualityControlService qualityControlService)
     {
         _qualityControlService = qualityControlService;
     }
 
-    /// <summary>
-    /// Проверяет, возможно ли перевести плату в следующее состояние безнес-процесса.
-    /// </summary>
-    /// <param name="printedCircuitBoard">Экземпляр платы.</param>
-    /// <returns>Сообщение-статус проверки бизнес-правил.</returns>
-    /// <exception cref="InvalidOperationException">Невозможно осуществить проверку.</exception>
+
+    /// <inheritdoc />
     public BusinessProcessStatusEnum CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard)
     {
         switch (printedCircuitBoard.BusinessProcessStatus)

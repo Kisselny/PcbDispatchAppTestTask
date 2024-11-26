@@ -3,7 +3,8 @@ using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Services;
 
-public class QualityControlService
+/// <inheritdoc />
+public class QualityControlService : IQualityControlService
 {
     /// <summary>
     /// Выполняет проверку качества.

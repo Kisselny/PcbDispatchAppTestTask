@@ -1,4 +1,5 @@
-﻿using PcbDispatchService.Domain.Logic;
+﻿using System.ComponentModel.DataAnnotations;
+using PcbDispatchService.Domain.Logic;
 using PcbDispatchService.Domain.Logic.States;
 
 namespace PcbDispatchService.Domain.Models;
@@ -19,6 +20,7 @@ public class PrintedCircuitBoard
     /// <summary>
     /// Название платы.
     /// </summary>
+    [MaxLength(120)]
     public string Name { get; private set; }
     
     /// <summary>
@@ -29,8 +31,6 @@ public class PrintedCircuitBoard
     /// <summary>
     /// Статус бизнес-процесса.
     /// </summary>
-
-    
     public BusinessProcessStatusEnum BusinessProcessStatus { get; private set; }
     
     /// <summary>
@@ -41,11 +41,11 @@ public class PrintedCircuitBoard
 
 
     #region .ctor
+
     /// <summary>
-    /// Инициализирует экзампляр класса <see cref="PrintedCircuitBoard"/>
+    /// Создает новый экземпляр печатной платы.
     /// </summary>
-    /// <param name="name">Название печатной платы.</param>
-    /// <param name="stateFactory">Фабрика состояний.</param>
+    /// <param name="name">Имя платы.</param>
     public PrintedCircuitBoard(string name)
     {
         Id = generateId();

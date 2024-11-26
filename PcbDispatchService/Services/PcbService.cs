@@ -5,7 +5,10 @@ using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Services;
 
-public class PcbService
+/// <summary>
+/// Сервис операций над печатными платами.
+/// </summary>
+public class PcbService : IPcbService
 {
     private readonly PcbFactory _pcbFactory;
     private readonly IPcbRepository _pcbRepository;
@@ -13,6 +16,14 @@ public class PcbService
     private readonly MyCustomLoggerService _myCustomLoggerService;
     private readonly BusinessRules _businessRules;
 
+    /// <summary>
+    /// Создает экземпляр сервиса <see cref="PcbService"/>
+    /// </summary>
+    /// <param name="pcbFactory">Фабрика печатных плат.</param>
+    /// <param name="pcbRepository">Репозиторий печатных плат.</param>
+    /// <param name="componentTypesRepository">Репозиторий компонентов плат.</param>
+    /// <param name="myCustomLoggerService">Сервис логирования.</param>
+    /// <param name="businessRules">Сервис бизнес-правил.</param>
     public PcbService(PcbFactory pcbFactory, IPcbRepository pcbRepository, IComponentTypesRepository componentTypesRepository, MyCustomLoggerService myCustomLoggerService, BusinessRules businessRules)
     {
         _pcbFactory = pcbFactory;
@@ -22,6 +33,11 @@ public class PcbService
         _businessRules = businessRules;
     }
 
+    /// <summary>
+    /// Создает в системе новую печатную плату.
+    /// </summary>
+    /// <param name="name">Имя новой платы.</param>
+    /// <returns>Идентификатор созданной платы.</returns>
     public async Task<int> CreateCircuitBoard(string name)
     {
         var brandNewBoard = _pcbFactory.CreateCircuitBoard(name);
@@ -31,17 +47,28 @@ public class PcbService
         return brandNewBoard.Id;
     }
 
+    /// <summary>
+    /// Получить информацию о плате по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор платы.</param>
+    /// <returns>Печатная плата.</returns>
+    /// <exception cref="ArgumentNullException">Плата по указанному идентификатору не найдена.</exception>
     public async Task<PrintedCircuitBoard?> GetCircuitBoardById(int id)
     {
         var result = await _pcbRepository.GetPcbById(id);
         if (result == null)
         {
-            throw new ArgumentNullException(nameof(result));
+            throw new ApplicationException(nameof(result));
         }
         return result;
     }
 
-    public async Task<List<PrintedCircuitBoard>> GetALlBoards()
+    /// <summary>
+    /// Получает список всех печатных плат в системе.
+    /// </summary>
+    /// <returns>Коллекция печатных плат.</returns>
+    /// <remarks>Пагинация нужна и все дела, но чето времени мало оставалось. Пусть она тут как будто есть.</remarks>
+    public async Task<List<PrintedCircuitBoard>> GetAllBoards()
     {
         var result = await _pcbRepository.GetAllPcbs();
         return result;
@@ -66,6 +93,11 @@ public class PcbService
         }
     }
 
+    /// <summary>
+    /// Переименовать существующую печатную плату.
+    /// </summary>
+    /// <param name="boardId">Идентификатор платы.</param>
+    /// <param name="newName">Новое имя для платы.</param>
     public async Task RenameBoard(int boardId, string newName)
     {
         await _pcbRepository.RenameBoard(boardId, newName);
@@ -89,12 +121,21 @@ public class PcbService
         }
     }
 
+    /// <summary>
+    /// Удалить  печатную плату из системы.
+    /// </summary>
+    /// <param name="boardId">Идентификатор удаляемой платы.</param>
     public async Task DeleteBoard(int boardId)
     {
             await _pcbRepository.DeletePcbById(boardId);
             _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
     }
 
+    /// <summary>
+    /// Перевести плату на следующий шаг бизнес-процесса.
+    /// </summary>
+    /// <param name="boardId">Идентификатор платы.</param>
+    /// <returns>Сообщение с результатом операции.</returns>
     public async Task<string> AdvanceToNextStatus(int boardId)
     {
         var pcb = await _pcbRepository.GetPcbById(boardId);
@@ -110,6 +151,11 @@ public class PcbService
         return $"Плата (id = {boardId}) уже прошла весь процесс.";
     }
 
+    /// <summary>
+    /// Форматирует выходное сообщение о плате.
+    /// </summary>
+    /// <param name="pcb">Объект печатной платы.</param>
+    /// <returns>Отформатированный DTO.</returns>
     public BoardInfoDto FormatBoardDto(PrintedCircuitBoard pcb)
     {
         BoardInfoDto result2 = new BoardInfoDto(Id: pcb.Id, Name: pcb.Name,

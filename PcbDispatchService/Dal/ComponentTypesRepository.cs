@@ -3,15 +3,21 @@ using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Dal;
 
+/// <inheritdoc />
 public class ComponentTypesRepository : IComponentTypesRepository
 {
     private readonly ApplicationDbContext _context;
 
+    /// <summary>
+    /// Создает репозиторий типов компонентов.
+    /// </summary>
+    /// <param name="context">Контекст БД.</param>
     public ComponentTypesRepository(ApplicationDbContext context)
     {
         _context = context;
     }
 
+    /// <inheritdoc />
     public async Task<ComponentType?> GetComponentTypeByName(string name)
     {
         var component = await _context.ComponentTypes.AsNoTracking().Where(i => i.Name == name).FirstOrDefaultAsync();
@@ -23,7 +29,8 @@ public class ComponentTypesRepository : IComponentTypesRepository
         return component;
     }
 
-    
+
+    /// <inheritdoc />
     public async Task<List<ComponentType>> GetComponentTypesByNames(List<string> names)
     {
         if (names.Count == 0)
@@ -38,6 +45,7 @@ public class ComponentTypesRepository : IComponentTypesRepository
         return components;
     }
 
+    /// <inheritdoc />
     public async Task<List<ComponentType>> GetAllComponents()
     {
         return await _context.ComponentTypes.AsNoTracking().ToListAsync(); 
@@ -72,7 +80,8 @@ public class ComponentTypesRepository : IComponentTypesRepository
         _context.ComponentTypes.UpdateRange(storageComponents);
         await _context.SaveChangesAsync();
     }
-    
+
+    /// <inheritdoc />
     public async Task DecreaseComponentSupplyByValue(string componentTypeName, int value)
     {
         var component = await _context.ComponentTypes.Where(i => i.Name == componentTypeName).FirstOrDefaultAsync();
