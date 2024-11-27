@@ -32,11 +32,12 @@ public class PcbController : Controller
     /// <returns>Адрес с информацией о плате.</returns>
     /// <response code="201">Плата добавлена в систему.</response>
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateCircuitBoard(string name)
     {
         var idOfNewBoard = await _pcbService.CreateCircuitBoard(name);
         //return Ok($"Id новой платы: {idOfNewBoard}");
-        return Ok(CreatedAtAction(nameof(GetCircuitBoardInfo), new { id = idOfNewBoard }));
+        return CreatedAtAction(nameof(GetCircuitBoardInfo), new { id = idOfNewBoard });
     }
     
     /// <summary>
@@ -47,9 +48,15 @@ public class PcbController : Controller
     /// <response code="200">Плата найдена.</response>
     /// <response code="404">Плата по указанному идентификатору не найдена.</response>
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PrintedCircuitBoard>> GetCircuitBoardInfo(int id)
     {
         var pcb = await _pcbService.GetCircuitBoardById(id);
+        if (pcb is null)
+        {
+            return NotFound("Плата по указанному идентификатору не найдена.");
+        }
         var result = _pcbService.FormatBoardDto(pcb);
         return Ok(result);
     }
@@ -62,6 +69,8 @@ public class PcbController : Controller
     /// <response code="200">Платы найдены.</response>
     /// <response code="404">Платы не найдены.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<BoardInfoDto>>> GetAllBoards()
     {
         var boards = await _pcbService.GetAllBoards();
@@ -85,7 +94,8 @@ public class PcbController : Controller
     /// <param name="boardId">Идентификатор платы.</param>
     /// <param name="dto">DTO компонента.</param>
     /// <returns>Результат добавления компонента.</returns>
-    /// /// <remarks>Добавлять компоненты можно только на этапе добавления компонентов.</remarks>
+    /// <remarks>Добавлять компоненты можно только на этапе добавления компонентов.</remarks>
+    /// <response code="204">Плата удалена из системы.</response>
     [HttpPut("{boardId}/add-single-component")]
     public async Task<IActionResult> AddComponentToCircuitBoard(int boardId, [FromBody] BoardComponentDto dto)
     {
@@ -100,6 +110,7 @@ public class PcbController : Controller
     /// <param name="newName">Новое имя.</param>
     /// <returns>Результат переименования.</returns>
     /// <remarks>Переименовать плату можно только на этапе регистрации.</remarks>
+    /// <response code="204">Плата переименована.</response>
     [HttpPut("{boardId}/rename/")]
     public async Task<IActionResult> RenameBoard(int boardId, [FromBody] string newName)
     {
@@ -113,6 +124,7 @@ public class PcbController : Controller
     /// <param name="boardId">Идентификатор платы.</param>
     /// <returns>Результат удаления компонентов с платы.</returns>
     /// <remarks>Удалять компоненты можно только на этапе добавления компонентов</remarks>
+    /// <response code="204">Плата очищена от компонентов.</response>
     [HttpPut("{boardId}/remove-components")]
     public async Task<IActionResult> RemoveAllComponentsFromBoard(int boardId)
     {
@@ -126,23 +138,24 @@ public class PcbController : Controller
     /// <param name="id">Идентификатор платы.</param>
     /// <returns>Результат удаления платы.</returns>
     /// <remarks>Удалять плату можно на любом этапе.</remarks>
-    /// <response code="200">Плата удалена из системы.</response>
+    /// <response code="204">Плата удалена из системы.</response>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBoard(int id)
     {
         await _pcbService.DeleteBoard(id);
-        return Ok("Плата удалена.");
+        return NoContent();
     }
 
     /// <summary>
     /// Переводит плату в следующее состояние процесса.
     /// </summary>
-    /// <param name="id">Идентификатор платы.</param>
+    /// <param name="boardId">Идентификатор платы.</param>
     /// <returns>Результат перевода платы в новое состояние.</returns>
+    /// <response code="204">Плата переведена на новый этап или находится на последнем этапе.</response>
     [HttpPut("{boardId}/next-stage/")]
     public async Task<IActionResult> MoveToNextBusinessState(int boardId)
     {
-        string result = await _pcbService.AdvanceToNextStatus(boardId);
-        return Ok(result);
+        await _pcbService.AdvanceToNextStatus(boardId);
+        return NoContent();
     }
 }

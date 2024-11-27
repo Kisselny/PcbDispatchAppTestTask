@@ -60,7 +60,7 @@ namespace PcbDispatchService.Services
         /// </summary>
         /// <param name="boardId">Идентификатор платы.</param>
         /// <returns>Сообщение с результатом операции.</returns>
-        Task<string> AdvanceToNextStatus(int boardId);
+        Task AdvanceToNextStatus(int boardId);
 
         /// <summary>
         /// Форматирует выходное сообщение о плате.

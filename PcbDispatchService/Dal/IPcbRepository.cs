@@ -33,7 +33,7 @@ public interface IPcbRepository
     /// </summary>
     /// <param name="id">Идентификатор.</param>
     /// <returns></returns>
-    Task DeletePcbById(int id);
+    Task<bool> DeletePcbById(int id);
     
     /// <summary>
     /// Переименовать плату.

@@ -56,10 +56,6 @@ public class PcbService : IPcbService
     public async Task<PrintedCircuitBoard?> GetCircuitBoardById(int id)
     {
         var result = await _pcbRepository.GetPcbById(id);
-        if (result == null)
-        {
-            throw new ApplicationException(nameof(result));
-        }
         return result;
     }
 
@@ -85,11 +81,22 @@ public class PcbService : IPcbService
     {
         var componentType = await _componentTypesRepository.GetComponentTypeByName(componentTypeName);
 
-        if (componentType.AvailableSupply >= quantity)
+        if (componentType is not null)
         {
-            BoardComponent newBc = new BoardComponent(componentType, quantity);
-            await _pcbRepository.AddComponentToBoard(boardId, newBc);
-            await _componentTypesRepository.DecreaseComponentSupplyByValue(componentTypeName, quantity);
+            if (componentType.AvailableSupply >= quantity)
+            {
+                BoardComponent newBc = new BoardComponent(componentType, quantity);
+                await _pcbRepository.AddComponentToBoard(boardId, newBc);
+                await _componentTypesRepository.DecreaseComponentSupplyByValue(componentTypeName, quantity);
+            }
+            else
+            {
+                throw new ApplicationException("На складе недостаточно компонентов данного типа");
+            }
+        }
+        else
+        {
+            throw new ApplicationException("Запрошенный компонент не найден.");
         }
     }
 
@@ -101,23 +108,33 @@ public class PcbService : IPcbService
     public async Task RenameBoard(int boardId, string newName)
     {
         await _pcbRepository.RenameBoard(boardId, newName);
-        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переименована.");
     }
 
     /// <summary>
-    /// Удаляет все компоненты с печатной платы для добавления заново.
+    /// Удаляет все компоненты с печатной платы и возвращает их на склад.
     /// </summary>
     /// <param name="boardId">Идентификатор платы.</param>
-    /// <remarks>Возвращает удаленные компоненты на склад.</remarks>
     public async Task RemoveAllComponentsFromBoard(int boardId)
     {
         var boardToRemoveComponentsFrom = await _pcbRepository.GetPcbById(boardId);
         if(boardToRemoveComponentsFrom is not null)
         {
-            var componentsToReturnToStorage = boardToRemoveComponentsFrom.Components;
-            await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
-            await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
-            _myCustomLoggerService.LogThisSh_t($"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
+            if(boardToRemoveComponentsFrom.Components.Count > 0)
+            {
+                var componentsToReturnToStorage = boardToRemoveComponentsFrom.Components;
+                await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
+                await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
+                _myCustomLoggerService.LogThisSh_t(
+                    $"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
+            }
+            else
+            {
+                _myCustomLoggerService.LogThisSh_t("Удаление компонентов не произведено: плата не содержит компонентов.");
+            }
+        }
+        else
+        {
+            throw new ApplicationException("Удаление компонентов не выполнено: плата не найдена.");
         }
     }
 
@@ -127,8 +144,14 @@ public class PcbService : IPcbService
     /// <param name="boardId">Идентификатор удаляемой платы.</param>
     public async Task DeleteBoard(int boardId)
     {
-            await _pcbRepository.DeletePcbById(boardId);
-            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) удалена из системы.");
+        if (await _pcbRepository.DeletePcbById(boardId))
+        {
+            _myCustomLoggerService.LogThisSh_t($"Плата {boardId} удалена.");
+        }
+        else
+        {
+            _myCustomLoggerService.LogThisSh_t($"Платы {boardId} не существует.");
+        }
     }
 
     /// <summary>
@@ -136,19 +159,24 @@ public class PcbService : IPcbService
     /// </summary>
     /// <param name="boardId">Идентификатор платы.</param>
     /// <returns>Сообщение с результатом операции.</returns>
-    public async Task<string> AdvanceToNextStatus(int boardId)
+    public async Task AdvanceToNextStatus(int boardId)
     {
         var pcb = await _pcbRepository.GetPcbById(boardId);
-        var result = _businessRules.CheckIfContinuationIsPossible(pcb);
-        if (pcb.BusinessProcessStatus != result)
+        if (pcb is not null)
         {
-            pcb.SetBusinessEnum(result);
-            await _pcbRepository.UpdateBoardState(pcb);
-            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
-            return $"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}.";
+            var result = _businessRules.CheckIfContinuationIsPossible(pcb);
+            if (pcb.BusinessProcessStatus != result)
+            {
+                pcb.SetBusinessEnum(result);
+                await _pcbRepository.UpdateBoardState(pcb);
+                _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
+            }
+            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) прошла весь процесс.");
         }
-        _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) прошла весь процесс.");
-        return $"Плата (id = {boardId}) уже прошла весь процесс.";
+        else
+        {
+            throw new ApplicationException($"Невозможно обновить статус платы {boardId}: плата не найдена.");
+        }
     }
 
     /// <summary>

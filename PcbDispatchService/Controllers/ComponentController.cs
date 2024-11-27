@@ -26,6 +26,7 @@ public class ComponentController : Controller
     /// Получить все имеющиеся на складе компоненты.
     /// </summary>
     /// <returns>Коллекция компонентов.</returns>
+    /// <response code="200">Компоненты найдены.</response>
     [HttpGet]
     public async Task<IActionResult> GetAllTypes()
     {

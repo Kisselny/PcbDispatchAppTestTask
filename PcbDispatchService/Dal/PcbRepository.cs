@@ -25,14 +25,8 @@ public class PcbRepository : IPcbRepository
             .Where(i => i.Id == id)
             .Include(i => i.Components)
             .FirstOrDefaultAsync();
-        if(pcb is not null)
-        {
-            return pcb;
-        }
-        else
-        {
-            throw new ApplicationException($"Плата {id} не найдена.");
-        }
+
+        return pcb;
     }
 
     /// <inheritdoc />
@@ -59,7 +53,7 @@ public class PcbRepository : IPcbRepository
     }
 
     /// <inheritdoc />
-    public async Task DeletePcbById(int id)
+    public async Task<bool> DeletePcbById(int id)
     {
         var pcb = await _context.PrintedCircuitBoards
             .Where(i => i.Id == id)
@@ -74,10 +68,11 @@ public class PcbRepository : IPcbRepository
             }
             _context.PrintedCircuitBoards.Remove(pcb);
             await _context.SaveChangesAsync();
+            return true;
         }
         else
         {
-            throw new ApplicationException($"Не удалось удалить плату {id}, т.к. она не найдена.");
+            return false;
         }
     }
 
