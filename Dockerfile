@@ -1,40 +1,29 @@
-# Используем официальный образ .NET SDK для сборки приложения
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-
-# Устанавливаем рабочую директорию
+ARG BUILD_CONFIGURATION=Debug
 WORKDIR /app
 
-# Копируем csproj и восстанавливаем зависимости
-COPY PcbDispatchService/PcbDispatchService.csproj ./ 
-RUN dotnet restore
+# �������� ������ ���� ������� ��� ����������� restore
+COPY ["PcbDispatchService/PcbDispatchService.csproj", "./PcbDispatchService/"]
 
-# Копируем все файлы и собираем приложение
-COPY PcbDispatchService/. ./
-RUN dotnet publish -c Release -o out
+RUN dotnet restore "./PcbDispatchService/PcbDispatchService.csproj"
 
-# Используем официальный образ ASP.NET Core для запуска приложения
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
+# �������� ���� �������� ���
+COPY . .
 
+WORKDIR "/app/PcbDispatchService"
+RUN dotnet build "PcbDispatchService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-ENV PATH="$PATH:/root/.dotnet/tools"
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Debug
+RUN dotnet publish "PcbDispatchService.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-
-# Устанавливаем рабочую директорию
+FROM base AS final
 WORKDIR /app
-
-# Копируем собранное приложение из предыдущего этапа
-COPY --from=build /app/out .
-
-# Открываем порты для PostgreSQL и ASP.NET Core
-EXPOSE 5432
-EXPOSE 80
-
-# Копируем скрипт entrypoint.sh и даем ему права на выполнение
-COPY entrypoint.sh ./
-RUN chmod +x ./entrypoint.sh
-RUN chmod -R a+X /usr/share/dotnet
-
-RUN sed -i 's/\r$//' entrypoint.sh
-
-# Запускаем скрипт при старте контейнера
-CMD ["./entrypoint.sh"]
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "PcbDispatchService.dll"]
