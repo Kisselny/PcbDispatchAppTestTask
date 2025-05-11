@@ -14,7 +14,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-      - "8081:8081"  # Порт по умолчанию для ASP.NET Core
+      - "8081:8081"
+      - "5005:5005"
     depends_on:
       - postgres
     environment:
