@@ -4,3 +4,9 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/*.vsidx
 .vs/PcbDispatchTestTask/FileContentIndex/*.vsidx
+.vs/PcbDispatchTestTask/CopilotIndices/17.13.439.2385/
+.vs/PcbDispatchTestTask/v17/
+.vs/ProjectEvaluation/
+.vs/PcbDispatchTestTask/DesignTimeBuild/
+.vs/PcbDispatchTestTask/copilot-chat/cf3d9f71/sessions/
+PcbDispatchService/PcbDispatchService.csproj.user
