@@ -19,6 +19,11 @@ public class PcbFactory : IPcbFactory
     /// <returns>Экземпляр печатной платы</returns>
     public PrintedCircuitBoard CreateCircuitBoard(string name)
     {
+        if (name is null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+
         var brandNewBoard = new PrintedCircuitBoard(name);
         return brandNewBoard;
     }

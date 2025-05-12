@@ -31,6 +31,8 @@ public class ComponentController : Controller
     public async Task<IActionResult> GetAllTypes()
     {
         var result = await _componentTypesRepository.GetAllComponents();
-        return Ok(result);
+        return result == null
+            ? NotFound("Компоненты не найдены.")
+            : Ok(result);
     }
 }
