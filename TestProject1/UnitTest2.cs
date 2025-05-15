@@ -42,7 +42,7 @@ namespace TestProject1
         public void CreateCircuitBoard_ThrowsException_WhenNameIsEmpty()
         {
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => _factory.CreateCircuitBoard(string.Empty), "Ожидается исключение при передаче пустой строки.");
+            Assert.Throws<PcbDispatchService.Domain.Logic.BusinessException>(() => _factory.CreateCircuitBoard(string.Empty), "Ожидается исключение при передаче пустой строки.");
         }
     }
 }
