@@ -14,13 +14,13 @@ namespace PcbDispatchService.Controllers;
 [Route("api/[controller]")]
 public class PcbController : Controller
 {
-    private readonly PcbService _pcbService;
+    private readonly IPcbService _pcbService;
 
     /// <summary>
     /// Создает контроллер печатных плат.
     /// </summary>
     /// <param name="pcbService">Сервис печатных плат.</param>
-    public PcbController(PcbService pcbService)
+    public PcbController(IPcbService pcbService)
     {
         _pcbService = pcbService;
     }
