@@ -6,7 +6,7 @@ using PcbDispatchService.Services;
 namespace TestProject1
 {
     [TestFixture]
-    public class UnitTest2
+    public class PcbFactoryTests
     {
         private PcbFactory _factory;
 
