@@ -35,6 +35,10 @@ public class PcbController : Controller
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateCircuitBoard(string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return BadRequest("Name cannot be null or empty.");
+        }
         var idOfNewBoard = await _pcbService.CreateCircuitBoard(name);
         //return Ok($"Id новой платы: {idOfNewBoard}");
         return CreatedAtAction(nameof(GetCircuitBoardInfo), new { id = idOfNewBoard });
@@ -99,6 +103,19 @@ public class PcbController : Controller
     [HttpPut("{id}/add-single-component")]
     public async Task<IActionResult> AddComponentToCircuitBoard(int id, [FromBody] BoardComponentDto dto)
     {
+        if (dto == null)
+            return BadRequest("Component data is required.");
+
+        if (string.IsNullOrWhiteSpace(dto.ComponentTypeName))
+            return BadRequest("ComponentTypeName is required.");
+
+        if (dto.Quantity <= 0)
+            return BadRequest("Quantity must be greater than zero.");
+
+        var pcb = await _pcbService.GetCircuitBoardById(id);
+        if (pcb == null)
+            return NotFound("Плата по указанному идентификатору не найдена.");
+
         await _pcbService.AddComponent(id, dto.ComponentTypeName, dto.Quantity);
         return NoContent();
     }
