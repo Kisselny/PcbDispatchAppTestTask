@@ -16,6 +16,7 @@ namespace TestProject1
 {
     public class PcbControllerTests
     {
+        #region Fields & Ctor
         private readonly Mock<IPcbService> _pcbServiceMock;
         private readonly PcbController _controller;
 
@@ -23,8 +24,10 @@ namespace TestProject1
         {
             _pcbServiceMock = new Mock<IPcbService>();
             _controller = new PcbController(_pcbServiceMock.Object);
-        }
+        } 
+        #endregion
 
+        #region CreateCircuitBoard Tests
         [Fact]
         public async Task CreateCircuitBoard_ReturnsCreatedAtAction()
         {
@@ -39,7 +42,7 @@ namespace TestProject1
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(nameof(_controller.GetCircuitBoardInfo), createdResult.ActionName);
-           
+
             var expectedJson = JsonSerializer.Serialize(new { id = newId });
             var actualJson = JsonSerializer.Serialize(createdResult.Value);
             Assert.Equal(expectedJson, actualJson);
@@ -55,9 +58,10 @@ namespace TestProject1
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result);
-        }
+        } 
+        #endregion
 
-
+        #region GetCircuitBoardInfo Tests
         [Fact]
         public async Task GetCircuitBoardInfo_BoardExists_ReturnsOk()
         {
@@ -96,8 +100,10 @@ namespace TestProject1
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
-        }
+        } 
+        #endregion
 
+        #region GetAllBoards Tests
         [Fact]
         public async Task GetAllBoards_BoardsExist_ReturnsOk()
         {
@@ -136,7 +142,9 @@ namespace TestProject1
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
         }
+        #endregion
 
+        #region AddComponentToCircuitBoard Tests
         [Fact]
         public async Task AddComponentToCircuitBoard_ReturnsNoContent()
         {
@@ -151,7 +159,9 @@ namespace TestProject1
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
+        #endregion
 
+        #region RenameBoard Tests
         [Fact]
         public async Task RenameBoard_ReturnsNoContent()
         {
@@ -166,7 +176,9 @@ namespace TestProject1
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
+        #endregion
 
+        #region RemoveAllComponentsFromBoard Tests
         [Fact]
         public async Task RemoveAllComponentsFromBoard_ReturnsNoContent()
         {
@@ -180,7 +192,9 @@ namespace TestProject1
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
+        #endregion
 
+        #region DeleteBoard Tests
         [Fact]
         public async Task DeleteBoard_ReturnsNoContent()
         {
@@ -194,7 +208,9 @@ namespace TestProject1
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
+        #endregion
 
+        #region MoveToNextBusinessState Tests
         [Fact]
         public async Task MoveToNextBusinessState_ReturnsNoContent()
         {
@@ -207,6 +223,7 @@ namespace TestProject1
 
             // Assert
             Assert.IsType<NoContentResult>(result);
-        }
+        } 
+        #endregion
     }
 }
