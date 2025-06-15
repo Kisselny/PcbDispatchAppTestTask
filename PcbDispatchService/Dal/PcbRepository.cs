@@ -113,21 +113,12 @@ public class PcbRepository : IPcbRepository
     /// <inheritdoc />
     public async Task UpdateBoardState(PrintedCircuitBoard newStatePcb)
     {
-        var pcb = await _context.PrintedCircuitBoards
-            .Where(i => i.Id == newStatePcb.Id)
-            .FirstOrDefaultAsync();
-        if (pcb != null)
-        {
-            pcb.SetBusinessEnum(newStatePcb.BusinessProcessStatus);
-            _context.PrintedCircuitBoards.Update(pcb);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ApplicationException($"Не удалось изменить статус, плата {newStatePcb.Id} не найдена.");
-        }
+        _context.PrintedCircuitBoards.Update(newStatePcb);
+        await _context.SaveChangesAsync();
     }
 
+
+    //deprecation is considered, due to moving logic up to service
     /// <inheritdoc />
     public async Task AddComponentToBoard(int boardId, BoardComponent boardComponent)
     {

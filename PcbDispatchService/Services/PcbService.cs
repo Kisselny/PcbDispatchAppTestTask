@@ -1,4 +1,6 @@
-﻿using PcbDispatchService.Controllers.Dto;
+﻿using Microsoft.EntityFrameworkCore;
+
+using PcbDispatchService.Controllers.Dto;
 using PcbDispatchService.Dal;
 using PcbDispatchService.Domain.Logic;
 using PcbDispatchService.Domain.Models;
@@ -100,6 +102,49 @@ public class PcbService : IPcbService
         }
     }
 
+    //перемещено сюда из класса репозитория
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="boardId"></param>
+    /// <param name="boardComponent"></param>
+    /// <returns></returns>
+    /// <remarks>перемещено сюда из класса репозитория</remarks>
+    /// <exception cref="ApplicationException"></exception>
+    public async Task AddComponentToBoard(int boardId, BoardComponent boardComponent)
+    {
+        var pcb = await _pcbRepository.GetPcbById(boardId);
+        if (pcb is not null)
+        {
+            if (pcb.Components.Count > 0)
+            {
+                var existingComponent = pcb.Components
+                    .FirstOrDefault(i => i.ComponentType == boardComponent.ComponentType);
+                if (existingComponent is not null)
+                {
+                    existingComponent.Quantity += boardComponent.Quantity;
+                    pcb.AddComponentToPcb(existingComponent);
+                }
+                else
+                {
+                    pcb.AddComponentToPcb(boardComponent);
+                }
+            }
+            else
+            {
+                pcb.AddComponentToPcb(boardComponent);
+            }
+            //_context.PrintedCircuitBoards.Update(pcb);
+            //await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new ApplicationException($"Плата {boardId} не найдена.");
+        }
+    }
+
+
+
     /// <summary>
     /// Переименовать существующую печатную плату.
     /// </summary>
@@ -121,9 +166,9 @@ public class PcbService : IPcbService
         {
             if(boardToRemoveComponentsFrom.Components.Count > 0)
             {
+                await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
                 var componentsToReturnToStorage = boardToRemoveComponentsFrom.Components;
                 await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
-                await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
                 _myCustomLoggerService.LogThisSh_t(
                     $"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
             }
@@ -162,20 +207,25 @@ public class PcbService : IPcbService
     public async Task AdvanceToNextStatus(int boardId)
     {
         var pcb = await _pcbRepository.GetPcbById(boardId);
-        if (pcb is not null)
+        if (pcb is null)
         {
-            var result = _businessRules.CheckIfContinuationIsPossible(pcb);
-            if (pcb.BusinessProcessStatus != result)
-            {
-                pcb.SetBusinessEnum(result);
-                await _pcbRepository.UpdateBoardState(pcb);
-                _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
-            }
-            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) прошла весь процесс.");
+            string log = $"Невозможно обновить статус платы {boardId}: плата не найдена.";
+            _myCustomLoggerService.LogThisSh_t(log);
+            throw new ApplicationException(log);
         }
         else
         {
-            throw new ApplicationException($"Невозможно обновить статус платы {boardId}: плата не найдена.");
+            try
+            {
+                pcb.AdvanceBusinessStatus(_businessRules);
+                await _pcbRepository.UpdateBoardState(pcb);
+                _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
+            }
+            catch (BusinessException ex)
+            {
+                _myCustomLoggerService.LogThisSh_t(ex.Message);
+                throw;
+            }
         }
     }
 

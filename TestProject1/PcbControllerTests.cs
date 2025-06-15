@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PcbDispatchService.Controllers;
 using PcbDispatchService.Controllers.Dto;
+using PcbDispatchService.Domain.Logic;
 using PcbDispatchService.Domain.Models;
 using PcbDispatchService.Services;
 using Xunit;
@@ -151,6 +152,7 @@ namespace TestProject1
             // Arrange
             var dto = new BoardComponentDto("TestTypeName", 10);
             int id = 42;
+            _pcbServiceMock.Setup(s => s.GetCircuitBoardById(id)).ReturnsAsync(new PrintedCircuitBoard());
             _pcbServiceMock.Setup(s => s.AddComponent(id, dto.ComponentTypeName, dto.Quantity)).Returns(Task.CompletedTask);
 
             // Act
@@ -158,6 +160,51 @@ namespace TestProject1
 
             // Assert
             Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task AddComponentToCircuitBoard_DtoIsNull_ReturnsBadRequest()
+        {
+            // Arrange
+            BoardComponentDto? dto = null;
+            int id = 42;
+
+            // Act
+            var result = await _controller.AddComponentToCircuitBoard(id, dto!);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Theory]
+        [InlineData(null, 1)]           // dto == null
+        [InlineData("", 1)]             // ComponentTypeName is empty
+        [InlineData("   ", 1)]          // ComponentTypeName is whitespace
+        [InlineData("ValidName", 0)]    // Quantity is zero
+        [InlineData("ValidName", -5)]   // Quantity is negative
+        public async Task AddComponentToCircuitBoard_InvalidInput_ReturnsBadRequest(string? componentTypeName, int quantity)
+        {
+            int id = 42;
+            BoardComponentDto? dto = new BoardComponentDto(componentTypeName, quantity);
+
+            var result = await _controller.AddComponentToCircuitBoard(id, dto);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task AddComponentToCircuitBoard_PcbNotFound_ReturnsNotFound()
+        {
+            // Arrange
+            BoardComponentDto? dto = new BoardComponentDto("ValidTypeName", 2);
+            int id = 42;
+
+            // Act
+            _pcbServiceMock.Setup(s => s.GetCircuitBoardById(id)).ReturnsAsync(null as PrintedCircuitBoard);
+            var result = await _controller.AddComponentToCircuitBoard(id, dto);
+
+            // Assert
+            Assert.IsType<NotFoundObjectResult>(result);
         }
         #endregion
 
@@ -176,6 +223,23 @@ namespace TestProject1
             // Assert
             Assert.IsType<NoContentResult>(result);
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public async Task RenameBoard_NameIsNullOrEmpty_ReturnsBadRequest(string newName)
+        {
+            // Arrange
+            var id = 1;
+            _pcbServiceMock.Setup(s => s.RenameBoard(id, newName)).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.RenameBoard(id, newName);
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+        }
         #endregion
 
         #region RemoveAllComponentsFromBoard Tests
@@ -191,6 +255,38 @@ namespace TestProject1
 
             // Assert
             Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task RemoveAllComponentsFromBoard_WrongBusinessState_ReturnsConflict()
+        {
+            // Arrange
+            var id = 1;
+            _pcbServiceMock
+                .Setup(s => s.RemoveAllComponentsFromBoard(id))
+                .ThrowsAsync(new BusinessException("Ошибка бизнес-статуса"));
+
+            // Act
+            var result = await _controller.RemoveAllComponentsFromBoard(id);
+
+            // Assert
+            Assert.IsType<ConflictObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task RemoveAllComponentsFromBoard_PcbNotFound_ReturnsNotFound()
+        {
+            // Arrange
+            var id = 1;
+            _pcbServiceMock
+                .Setup(s => s.RemoveAllComponentsFromBoard(id))
+                .ThrowsAsync(new ApplicationException("Плата не найдена"));
+
+            // Act
+            var result = await _controller.RemoveAllComponentsFromBoard(id);
+
+            // Assert
+            Assert.IsType<NotFoundObjectResult>(result);
         }
         #endregion
 
@@ -223,7 +319,35 @@ namespace TestProject1
 
             // Assert
             Assert.IsType<NoContentResult>(result);
-        } 
+        }
+
+        [Fact]
+        public async Task MoveToNextBusinessState_PcbNotFound_ReturnsNotFound()
+        {
+            // Arrange
+            var id = 1;
+            _pcbServiceMock.Setup(s => s.AdvanceToNextStatus(id)).ThrowsAsync(new ApplicationException("Плата не найдена"));
+
+            // Act
+            var result = await _controller.MoveToNextBusinessState(id);
+
+            // Assert
+            Assert.IsType<NotFoundObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task MoveToNextBusinessState_WrongState_ReturnsConflict()
+        {
+            // Arrange
+            var id = 1;
+            _pcbServiceMock.Setup(s => s.AdvanceToNextStatus(id)).ThrowsAsync(new BusinessException("Не удалось перевести плату в новое состояние: нарушены бизнес-правила"));
+
+            // Act
+            var result = await _controller.MoveToNextBusinessState(id);
+
+            // Assert
+            Assert.IsType<ConflictObjectResult>(result);
+        }
         #endregion
     }
 }

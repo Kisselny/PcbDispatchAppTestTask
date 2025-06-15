@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Intrinsics.X86;
+
 using PcbDispatchService.Domain.Logic.States;
 using PcbDispatchService.Domain.Models;
 using PcbDispatchService.Services;
@@ -14,6 +15,7 @@ public class BusinessRules : IBusinessRules
     private readonly string notOkMessageComponents = "К плате необходимо добавить компоненты";
     private readonly string notOkMessageQuality = "Плата не прошла контроль качества. Необходимо отправить на ремонт.";
     private readonly string notOkMessageDefective = "Плата не прошла контроль качества, т.к. признана бракованной.";
+    private readonly string notOkMessagePackage = "Плата уже упакована и готова к отправке.";
 
     
     /// <summary>
@@ -78,7 +80,7 @@ public class BusinessRules : IBusinessRules
             }
             case BusinessProcessStatusEnum.Packaging:
             {
-                return BusinessProcessStatusEnum.Packaging;
+                throw new BusinessException(notOkMessageStart + notOkMessagePackage);
             }
         }
         throw new InvalidOperationException("Сюда мы не должны дойти.");
