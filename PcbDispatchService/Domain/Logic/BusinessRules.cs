@@ -25,9 +25,8 @@ public class BusinessRules : IBusinessRules
         _qualityControlService = qualityControlService;
     }
 
-
     /// <inheritdoc />
-    public BusinessProcessStatusEnum CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard)
+    public BusinessProcessStatusEnum GetNextBusinessStatusForPcb(PrintedCircuitBoard printedCircuitBoard)
     {
         switch (printedCircuitBoard.BusinessProcessStatus)
         {
