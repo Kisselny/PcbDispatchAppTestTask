@@ -121,11 +121,19 @@ public class PcbService : IPcbService
         {
             if(boardToRemoveComponentsFrom.Components.Count > 0)
             {
-                var componentsToReturnToStorage = boardToRemoveComponentsFrom.Components;
-                await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
-                await _pcbRepository.RemoveComponentsFromBoard(boardToRemoveComponentsFrom.Id);
-                _myCustomLoggerService.LogThisSh_t(
-                    $"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
+                try
+                {
+                    var componentsToReturnToStorage = boardToRemoveComponentsFrom.RemoveAllComponentsFromBoard();
+                    await _pcbRepository.UpdateBoardState(boardToRemoveComponentsFrom);
+                    await _componentTypesRepository.IncreaseComponentSupplyByValue(componentsToReturnToStorage);
+                    _myCustomLoggerService.LogThisSh_t(
+                        $"С платы (id = {boardId}) удалены все компоненты. Компоненты вернулись на склад.");
+                }
+                catch (BusinessException ex)
+                {
+                    _myCustomLoggerService.LogThisSh_t(ex.Message);
+                    throw;
+                }
             }
             else
             {

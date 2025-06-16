@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PcbDispatchService.Domain.Logic.States;
 using PcbDispatchService.Domain.Models;
 
 namespace PcbDispatchService.Dal;
@@ -95,37 +94,10 @@ public class PcbRepository : IPcbRepository
     }
 
     /// <inheritdoc />
-    public async Task RemoveComponentsFromBoard(int id)
-    {
-        var pcb = await _context.PrintedCircuitBoards.Where(i => i != null && i.Id == id).FirstOrDefaultAsync();
-        if (pcb != null)
-        {
-            pcb.RemoveAllComponentsFromBoard();
-            _context.PrintedCircuitBoards.Update(pcb);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ApplicationException($"Не удалось удалить компоненты, плата {id} не найдена.");
-        }
-    }
-
-    /// <inheritdoc />
     public async Task UpdateBoardState(PrintedCircuitBoard newStatePcb)
     {
-        var pcb = await _context.PrintedCircuitBoards
-            .Where(i => i.Id == newStatePcb.Id)
-            .FirstOrDefaultAsync();
-        if (pcb != null)
-        {
-            pcb.SetBusinessEnum(newStatePcb.BusinessProcessStatus);
-            _context.PrintedCircuitBoards.Update(pcb);
-            await _context.SaveChangesAsync();
-        }
-        else
-        {
-            throw new ApplicationException($"Не удалось изменить статус, плата {newStatePcb.Id} не найдена.");
-        }
+        _context.PrintedCircuitBoards.Update(newStatePcb);
+        await _context.SaveChangesAsync();
     }
 
     /// <inheritdoc />

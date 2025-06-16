@@ -110,14 +110,16 @@ public class PrintedCircuitBoard
     }
 
     /// <summary>
-    /// Удаляет все добавленные компоненты с текущей платы.
+    /// Удаляет и возвращает все добавленные компоненты с текущей платы.
     /// </summary>
     /// <exception cref="BusinessException">Невозможно удалить компоненты.</exception>
-    public void RemoveAllComponentsFromBoard()
+    public List<BoardComponent> RemoveAllComponentsFromBoard()
     {
         if (BusinessProcessStatus is BusinessProcessStatusEnum.ComponentInstallation)
         {
+            var deletedComponents = Components;
             Components.Clear();
+            return deletedComponents;
         }
         else
         {

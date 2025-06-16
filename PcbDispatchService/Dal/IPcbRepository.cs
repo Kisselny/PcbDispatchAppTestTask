@@ -44,13 +44,6 @@ public interface IPcbRepository
     Task RenameBoard(int id, string newName);
     
     /// <summary>
-    /// Удалить с платы все компоненты.
-    /// </summary>
-    /// <param name="id">Идентификатор.</param>
-    /// <returns></returns>
-    Task RemoveComponentsFromBoard(int id);
-    
-    /// <summary>
     /// Обновить статус бизне-процесса платы.
     /// </summary>
     /// <param name="newStatePcb">Плата с новым статусом.</param>

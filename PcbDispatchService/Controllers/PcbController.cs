@@ -1,10 +1,8 @@
-﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PcbDispatchService.Controllers.Dto;
+using PcbDispatchService.Domain.Logic;
 using PcbDispatchService.Domain.Models;
 using PcbDispatchService.Services;
-using Swashbuckle.AspNetCore.Annotations;
-
 namespace PcbDispatchService.Controllers;
 
 /// <summary>
@@ -145,8 +143,19 @@ public class PcbController : Controller
     [HttpPut("{id}/remove-components")]
     public async Task<IActionResult> RemoveAllComponentsFromBoard(int id)
     {
-        await _pcbService.RemoveAllComponentsFromBoard(id);
-        return NoContent();
+        try
+        {
+            await _pcbService.RemoveAllComponentsFromBoard(id);
+            return NoContent();
+        } 
+        catch (BusinessException ex)
+        {
+            return Conflict(ex.Message); // 409
+        }
+        catch (ApplicationException ex)
+        {
+            return NotFound(ex.Message); // 404
+        }
     }
 
     /// <summary>
