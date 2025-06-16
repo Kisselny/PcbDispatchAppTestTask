@@ -129,6 +129,9 @@ public class PcbController : Controller
     [HttpPut("{id}/rename/")]
     public async Task<IActionResult> RenameBoard(int id, [FromBody] string newName)
     {
+        if (string.IsNullOrWhiteSpace(newName))
+            return BadRequest("New name cannot be null or empty.");
+
         await _pcbService.RenameBoard(id, newName);
         return NoContent();
     }
