@@ -170,20 +170,24 @@ public class PcbService : IPcbService
     public async Task AdvanceToNextStatus(int boardId)
     {
         var pcb = await _pcbRepository.GetPcbById(boardId);
-        if (pcb is not null)
+        if (pcb is null)
         {
-            var result = _businessRules.CheckIfContinuationIsPossible(pcb);
-            if (pcb.BusinessProcessStatus != result)
-            {
-                pcb.SetBusinessEnum(result);
-                await _pcbRepository.UpdateBoardState(pcb);
-                _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
-            }
-            _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) прошла весь процесс.");
+            string log = $"Невозможно обновить статус платы {boardId}: плата не найдена.";
+            _myCustomLoggerService.LogThisSh_t(log);
+            throw new ApplicationException(log);
         }
         else
         {
-            throw new ApplicationException($"Невозможно обновить статус платы {boardId}: плата не найдена.");
+            try
+            {
+                pcb.AdvanceBusinessStatus(_businessRules);
+                _myCustomLoggerService.LogThisSh_t($"Плата (id = {boardId}) переведена в новое состояние состояние: {pcb.BusinessProcessStatus}");
+            }
+            catch (BusinessException ex)
+            {
+                _myCustomLoggerService.LogThisSh_t(ex.Message);
+                throw;
+            }
         }
     }
 

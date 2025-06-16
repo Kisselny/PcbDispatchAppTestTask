@@ -11,5 +11,5 @@ public interface IBusinessRules
     /// <param name="printedCircuitBoard">Экземпляр платы.</param>
     /// <returns>Сообщение-статус проверки бизнес-правил.</returns>
     /// <exception cref="InvalidOperationException">Невозможно осуществить проверку.</exception>
-    BusinessProcessStatusEnum CheckIfContinuationIsPossible(PrintedCircuitBoard printedCircuitBoard);
+    BusinessProcessStatusEnum GetNextBusinessStatusForPcb(PrintedCircuitBoard printedCircuitBoard);
 }

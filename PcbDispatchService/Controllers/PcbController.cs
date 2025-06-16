@@ -181,7 +181,20 @@ public class PcbController : Controller
     [HttpPut("{id}/next-stage/")]
     public async Task<IActionResult> MoveToNextBusinessState(int id)
     {
-        await _pcbService.AdvanceToNextStatus(id);
-        return NoContent();
+        try
+        {
+            await _pcbService.AdvanceToNextStatus(id);
+            return NoContent();
+        }
+        catch (BusinessException ex)
+        {
+
+            return Conflict(ex.Message);
+        }
+        catch (ApplicationException ex)
+        {
+
+            return NotFound(ex.Message);
+        }
     }
 }

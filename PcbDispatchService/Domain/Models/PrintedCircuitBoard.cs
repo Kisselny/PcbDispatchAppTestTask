@@ -39,7 +39,6 @@ public class PrintedCircuitBoard
     public QualityControlStatus QualityControlStatus { get; set; }
     #endregion
 
-
     #region .ctor
 
     /// <summary>
@@ -126,6 +125,11 @@ public class PrintedCircuitBoard
             throw new BusinessException(
                 "Невозможно удалить компоненты: плата не находится на этапе добавления компонентов.");
         }
+    }
+
+    public void AdvanceBusinessStatus(IBusinessRules businessRules)
+    {
+        BusinessProcessStatus = businessRules.GetNextBusinessStatusForPcb(this);
     }
     #endregion
 
